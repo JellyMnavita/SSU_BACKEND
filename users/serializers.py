@@ -10,6 +10,7 @@ import secrets
 from .models import UserActivityLog
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core import exceptions
 from django.template.loader import render_to_string
 
 User = get_user_model()
@@ -104,9 +105,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class InscriptionSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour l'inscription avec tous les champs requis"""
+    """Sérialiseur pour l'inscription avec validation de mot de passe sécurisé"""
 
-    password = serializers.CharField(write_only=True, min_length=6)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,  # Minimum 8 caractères
+        style={'input_type': 'password'},  # Pour masquer le mot de passe dans les réponses
+        trim_whitespace=False,  # Ne pas supprimer les espaces (pour détection de mots de passe faibles)
+    )
 
     class Meta:
         model = User
@@ -120,12 +126,30 @@ class InscriptionSerializer(serializers.ModelSerializer):
             "sexe_user",
         )
 
+    def validate_password(self, value):
+        """Validation personnalisée pour le mot de passe"""
+        try:
+            # Utilise les validateurs de mot de passe intégrés de Django
+            validate_password(value)
+        except exceptions.ValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        
+        # Vous pouvez ajouter des validations supplémentaires ici si nécessaire
+        if value.lower() == value:
+            raise serializers.ValidationError("Le mot de passe doit contenir au moins une majuscule.")
+        if value.isalnum():
+            raise serializers.ValidationError("Le mot de passe doit contenir au moins un caractère spécial.")
+        if self.initial_data.get('username').lower() in value.lower():
+            raise serializers.ValidationError("Le mot de passe ne doit pas contenir votre nom d'utilisateur.")
+        
+        return value
+
     def create(self, validated_data):
-        user_type = TypeUser.objects.get(id=1)
+        user_type = TypeUser.objects.get(id=5)
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
-            password=validated_data["password"],
+            password=validated_data["password"],  # Django hash automatiquement le mot de passe
             phone_user=validated_data.get("phone_user", ""),
             profilePicture_user=validated_data.get("profilePicture_user", None),
             agreementTermsUse_user=validated_data["agreementTermsUse_user"],
@@ -134,7 +158,6 @@ class InscriptionSerializer(serializers.ModelSerializer):
         )
         user.send_verification_email()  # Envoi du code de validation
         return user
-
 
 
 class CreatePriviligeSerializer(serializers.ModelSerializer):
@@ -218,7 +241,6 @@ class SuperUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return User.objects.create_superuser(**validated_data)
 
-
 class VerificationCodeSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=6, required=True)
     email = serializers.EmailField(required=True)
@@ -244,7 +266,6 @@ class VerificationCodeSerializer(serializers.Serializer):
             raise serializers.ValidationError("Le code de vérification a expiré.")
 
         return data
-
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     """

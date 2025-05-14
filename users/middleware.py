@@ -9,9 +9,9 @@ class UserActivityMiddleware:
 
     def __call__(self, request):
         # Détection des actions avant traitement
-        is_login = (request.path == '/api/users/login/' and request.method == 'POST')
-        is_register = (request.path == '/api/users/register/' and request.method == 'POST')
-        is_password_change = (request.path == '/api/users/password/change/' and request.method == 'POST')
+        is_login = (request.path == '/api/user/login/' and request.method == 'POST')
+        is_register = (request.path == '/api/user/register/' and request.method == 'POST')
+        is_password_change = (request.path == '/api/user/password/change/' and request.method == 'POST')
         
         response = self.get_response(request)
         

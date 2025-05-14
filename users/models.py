@@ -70,7 +70,7 @@ class User(AbstractUser):
         """Génère un code de validation à 6 chiffres et met à jour la date d'expiration."""
         code = secrets.randbelow(1_000_000)
         self.verification_code = f"{code:06d}"
-        self.code_expiration = timezone.now() + timezone.timedelta(hours=24)
+        self.code_expiration = timezone.now() + timezone.timedelta(hours=30)
         self.save()
         return self.verification_code
 

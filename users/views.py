@@ -40,55 +40,93 @@ User = get_user_model()
 
 class TokenRefreshView(APIView):
     """
-    Vue personnalisée pour rafraîchir les tokens.
-    Accepte le refresh token et retourne un nouveau access token.
+    Rafraîchit le token d'accès à partir du refresh token stocké dans un cookie HttpOnly.
     """
-
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = RefreshTokenSerializer(data=request.data)
+        refresh_token = request.COOKIES.get("refresh_token")
 
-        if serializer.is_valid():
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        if refresh_token is None:
+            return Response({"error": "Aucun refresh token fourni."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            response = Response({"access": access_token}, status=status.HTTP_200_OK)
+
+            # Rotation du refresh token (si activée dans SIMPLE_JWT)
+            if getattr(settings, "SIMPLE_JWT", {}).get("ROTATE_REFRESH_TOKENS", False):
+                new_refresh = str(refresh)
+                response.set_cookie(
+                    key="refresh_token",
+                    value=new_refresh,
+                    httponly=True,
+                    secure=True,
+                    samesite="Lax",  # ou "None" si cross-domain
+                    max_age=3 * 24 * 60 * 60,
+                )
+
+            return response
+
+        except Exception as e:
+            return Response({"error": "Token invalide ou expiré."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
+        
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
+            
             user = serializer.validated_data["user"]
-
             # Générer les tokens JWT
             refresh = RefreshToken.for_user(user)
+            response = Response({
+                "access": str(refresh.access_token),
+                "user": UserSerializer(user).data,
+            }, status=status.HTTP_200_OK,)
 
-            return Response(
-                {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                    "user": UserSerializer(user).data,
-                },
-                status=status.HTTP_200_OK,
+            # Le refresh token dans un cookie sécurisé
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=True,  # si en production avec HTTPS
+                samesite="Lax",  # ou "None" si domaine différent
+                max_age=3 * 24 * 60 * 60  # 3 jours
             )
-
+            return response
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get("refresh_token")
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+
+            response = Response({"message": "Déconnexion réussie"}, status=status.HTTP_205_RESET_CONTENT)
+            response.delete_cookie("refresh_token")
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+         
 class InscriptionView(generics.CreateAPIView):
     """API pour inscrire un utilisateur normal"""
-
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = InscriptionSerializer
 
 
 class CreatePriviligeView(generics.CreateAPIView):
-
     queryset = User.objects.all()
     permission_classes = [IsAdminUserType]
     serializer_class = CreatePriviligeSerializer
@@ -186,21 +224,6 @@ class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdminUserType]
 
-
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        try:
-            tokens = OutstandingToken.objects.filter(user=request.user)
-            for token in tokens:
-                RefreshToken(token.token).blacklist()
-
-            return Response(
-                {"message": "Déconnexion réussie"}, status=status.HTTP_205_RESET_CONTENT
-            )
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordResetView(APIView):

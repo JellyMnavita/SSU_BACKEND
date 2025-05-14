@@ -28,7 +28,7 @@ urlpatterns = [
         UserRetrieveUpdateDestroyView.as_view(),
         name="admin-user-management",
     ),
-    path("auth/logout/", LogoutView.as_view(), name="logout"),
+    path("user/logout/", LogoutView.as_view(), name="logout"),
     path(
         "admin/users/activities/", UserActivityListView.as_view(), name="user-activities"
     ),

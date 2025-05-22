@@ -101,6 +101,7 @@ class UserSerializer(serializers.ModelSerializer):
             "phone_user",
             "profilePicture_user",
             "is_verified",
+            "sexe_user",
         )
 
 

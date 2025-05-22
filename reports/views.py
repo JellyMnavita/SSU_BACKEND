@@ -103,6 +103,7 @@ class RejectReportView(generics.UpdateAPIView):
 # Vues spécialisées
 class UserReportsListView(generics.ListAPIView):
     serializer_class = ReportSerializer
+    
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):

@@ -113,7 +113,7 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
 
-            response = Response({"message": "Déconnexion réussie"}, status=status.HTTP_205_RESET_CONTENT)
+            response = Response({"message": "Déconnexion réussie"}, status=status.HTTP_200_OK)
             response.delete_cookie("refresh_token")
             return response
         except Exception as e:
@@ -125,12 +125,10 @@ class InscriptionView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = InscriptionSerializer
 
-
 class CreatePriviligeView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [IsAdminUserType]
     serializer_class = CreatePriviligeSerializer
-
 
 class CreateSuperUserView(generics.CreateAPIView):
     """API pour créer un superutilisateur"""
@@ -138,7 +136,6 @@ class CreateSuperUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [IsAdminUser]  # Seuls les admins peuvent créer un superuser
     serializer_class = SuperUserSerializer
-
 
 class VerifyAccountView(APIView):
     def post(self, request):
@@ -152,7 +149,6 @@ class VerifyAccountView(APIView):
                 {"message": "Compte vérifié avec succès!"}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class ResendVerificationCodeView(APIView):
     def post(self, request):
@@ -182,7 +178,6 @@ class ResendVerificationCodeView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
 class UserListView(generics.ListAPIView):
     """
     API pour lister tous les utilisateurs
@@ -192,7 +187,6 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUserType]
-
 
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -213,7 +207,6 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]  # Nouvelle permission
 
-
 class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):
     """
     API pour les administrateurs :
@@ -224,12 +217,9 @@ class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdminUserType]
 
-
-
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-
 
 class UserActivityListView(generics.ListAPIView):
     serializer_class = UserActivityLogSerializer
@@ -240,7 +230,6 @@ class UserActivityListView(generics.ListAPIView):
         if user.is_superuser:
             return UserActivityLog.objects.all()
         return UserActivityLog.objects.filter(user=user)
-
 
 class ExportUserActivityView(APIView):
     permission_classes = [IsAdminUserType]
@@ -263,7 +252,6 @@ class ExportUserActivityView(APIView):
             )
 
         return response
-
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
@@ -320,7 +308,6 @@ class PasswordResetRequestView(APIView):
 
             return Response({"message": "Un email de réinitialisation a été envoyé."})
         return Response(serializer.errors, status=400)
-
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]

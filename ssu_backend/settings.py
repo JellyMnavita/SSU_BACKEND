@@ -6,9 +6,6 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-&=0nj_p95q$q65*g2ll=t(c9ee43dk(_izu8%^(tdugw=s-y2y"
 
@@ -30,6 +27,7 @@ INSTALLED_APPS = [
     "citizens",
     "reports",
     "locations",
+    "scrapping",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -103,8 +101,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'fr'
-TIME_ZONE = 'Africa/Kinshasa'
+LANGUAGE_CODE = "fr"
+TIME_ZONE = "Africa/Kinshasa"
 
 USE_I18N = True
 USE_L10N = True
@@ -154,9 +152,10 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # Développement
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Production
 MEDIA_URL = "/media/"  # Si le logo est uploadé via admin
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
 CORS_ALLOW_CREDENTIALS = True

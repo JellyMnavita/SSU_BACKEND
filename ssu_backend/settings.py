@@ -1,16 +1,18 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&=0nj_p95q$q65*g2ll=t(c9ee43dk(_izu8%^(tdugw=s-y2y"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"   
 
 ALLOWED_HOSTS = []
 
@@ -71,12 +73,13 @@ WSGI_APPLICATION = "ssu_backend.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
     "default": {
+        # Je veux utiliser les variables d'environnement
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "ssu_backend",
-        "USER": "postgres",
-        "PASSWORD": "1234567890",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
@@ -125,11 +128,11 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "jellymaweja7@gmail.com"
-EMAIL_HOST_PASSWORD = "klvizxhxrduznrlc"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 APP_NAME = "SSU"  # Nom à afficher dans les emails
-SUPPORT_EMAIL = "jellymaweja7@gmail.com"  # Email de support
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL")  # Email de support
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -146,7 +149,7 @@ SIMPLE_JWT = {
 }
 
 # URL de votre frontend pour le lien de reset
-FRONTEND_URL = "https://ssu-kinshasa.com.com"
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # Développement
@@ -155,7 +158,10 @@ MEDIA_URL = "/media/"  # Si le logo est uploadé via admin
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    os.getenv("CORS_ALLOWED_ORIGINS"),
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']

@@ -34,44 +34,64 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import base64
 import os
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.conf import settings
+
+
+from rest_framework import status
 
 User = get_user_model()
 
-
 class TokenRefreshView(APIView):
-    """
-    Rafraîchit le token d'accès à partir du refresh token stocké dans un cookie HttpOnly.
-    """
     permission_classes = [AllowAny]
 
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
-
         if refresh_token is None:
             return Response({"error": "Aucun refresh token fourni."}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            refresh = RefreshToken(refresh_token)
-            access_token = str(refresh.access_token)
+            old_refresh = RefreshToken(refresh_token)
+            access_token = str(old_refresh.access_token)
 
             response = Response({"access": access_token}, status=status.HTTP_200_OK)
 
-            # Rotation du refresh token (si activée dans SIMPLE_JWT)
-            if getattr(settings, "SIMPLE_JWT", {}).get("ROTATE_REFRESH_TOKENS", False):
-                new_refresh = str(refresh)
+            if settings.SIMPLE_JWT.get("ROTATE_REFRESH_TOKENS", False):
+                if settings.SIMPLE_JWT.get("BLACKLIST_AFTER_ROTATION", False):
+                    try:
+                        old_refresh.blacklist()
+                    except AttributeError:
+                        return Response({"error": "La blacklist n'est pas bien activée."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+                # 👉 Extraire user_id depuis le token
+                user_id = old_refresh["user_id"]
+                try:
+                    user = User.objects.get(id=user_id)
+                except User.DoesNotExist:
+                    return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+
+                # Créer un nouveau refresh token
+                new_refresh = RefreshToken.for_user(user)
                 response.set_cookie(
                     key="refresh_token",
-                    value=new_refresh,
+                    value=str(new_refresh),
                     httponly=True,
                     secure=True,
-                    samesite="Lax",  # ou "None" si cross-domain
+                    samesite="Lax",
                     max_age=3 * 24 * 60 * 60,
                 )
 
             return response
 
-        except Exception as e:
-            return Response({"error": "Token invalide ou expiré."}, status=status.HTTP_401_UNAUTHORIZED)
+        except TokenError:
+            return Response({"error": "Refresh token invalide ou expiré."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+User = get_user_model()
 
 
 class LoginView(APIView):
@@ -104,6 +124,7 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
+    
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -132,7 +153,6 @@ class CreatePriviligeView(generics.CreateAPIView):
 
 class CreateSuperUserView(generics.CreateAPIView):
     """API pour créer un superutilisateur"""
-
     queryset = User.objects.all()
     permission_classes = [IsAdminUser]  # Seuls les admins peuvent créer un superuser
     serializer_class = SuperUserSerializer

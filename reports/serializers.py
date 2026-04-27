@@ -56,6 +56,7 @@ class ReportSerializer(serializers.ModelSerializer):
             return {
                 "id": obj.user.id,
                 "username": obj.user.username,
+                "email": obj.user.email,
                 "type": obj.user.type_user.get_code_typeUser_display(),
             }
         return None
@@ -66,6 +67,7 @@ class ReportSerializer(serializers.ModelSerializer):
                 "id": obj.citizen.id,
                 "name": obj.citizen.name,
                 "lastname": obj.citizen.lastname,
+                "email": obj.citizen.email,
             }
         return None
 

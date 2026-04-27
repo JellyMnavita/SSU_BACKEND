@@ -9,6 +9,7 @@ from .views import (
     RejectReportView,
     UserReportsListView,
     CitizenReportsListView,
+    ReportStatsView,
 )
 
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
     path('admin/reports/<int:pk>/delete/', ReportDeleteView.as_view(), name='report-delete'),
     path('admin/reports/<int:pk>/validate/', ValidateReportView.as_view(), name='report-validate'),
     path('admin/reports/<int:pk>/reject/', RejectReportView.as_view(), name='report-reject'),
+    path('admin/reports/stats/', ReportStatsView.as_view(), name='report-stats'),
 
     # --- Vues spécialisées ---
     path('user/reports/', UserReportsListView.as_view(), name='user-reports'),

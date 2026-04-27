@@ -29,6 +29,9 @@ class UserManager(BaseUserManager):
             raise ValueError("Le nom d'utilisateur est obligatoire")
         
         email = self.normalize_email(email)
+        type_user_value = extra_fields.get("type_user")
+        if type_user_value is not None and not isinstance(type_user_value, TypeUser):
+            extra_fields["type_user"] = TypeUser.objects.get(pk=type_user_value)
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

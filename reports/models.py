@@ -32,7 +32,7 @@ class Report(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(source='U', user__isnull=False) |
                     models.Q(source='C', citizen__isnull=False) |
                     models.Q(source__in=['S', 'A'], user__isnull=True, citizen__isnull=True)

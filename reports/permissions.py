@@ -46,3 +46,11 @@ class CanCreateReport(permissions.BasePermission):
             
         user_type = request.user.type_user.code_typeUser
         return user_type in ['CITIZEN', 'GOV', 'COMPANY', 'ADMIN', 'USER']
+
+class IsAdminOrGov(permissions.BasePermission):
+    """Vérifie que l'utilisateur est un administrateur ou un service gouvernemental"""
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.type_user.code_typeUser in ['ADMIN', 'GOV']
+        )

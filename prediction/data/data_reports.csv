@@ -1,0 +1,313 @@
+latitude_report,longitude_report,location_report,degree_report,description_report,created_at
+-4.33144,15.3234,Quartier Funa,faible,voyous,2025-01-02 21:13:44
+-4.33843,15.331,Quartier Funa,faible,kuluna,2025-01-02 11:14:45
+-4.33845,15.3263,Quartier Funa,modéré,police,2025-01-02 14:17:34
+-4.32444,15.331,Ndolo,faible,kuluna,2025-01-02 18:23:44
+-4.32887,15.319,Kinshasa,faible,MACHIN MACHIN MACHIN,2025-01-02 19:24:10
+-4.3387,15.2975,Kinshasa,faible,dfd,2025-01-03 10:30:49
+-4.4386,15.2189,Kinshasa,modéré,police,2025-01-03 13:00:40
+-4.3071,15.3196,Kinshasa,élevé,voyous,2025-01-03 15:00:34
+-4.3071,15.3176,Kinshasa,faible,agression_temoin,2025-01-03 15:57:34
+-4.33438,15.3262,Mont Ngaïlema,modéré,agression_temoin,2025-01-03 18:47:56
+-4.31857,15.2862,Royal,élevé,agression_temoin,2025-01-06 10:15:39
+-4.45915,15.3048,Kilembo,élevé,vol,2025-02-05 13:38:11
+-4.3181,15.2232,Mont Ngaïlema,élevé,attaque,2025-01-03 04:15:00
+-4.3277,15.24846,Gombe,faible,agression,2025-01-02 22:21:00
+-4.38212,15.32259,Gombe,élevé,voleurs,2025-01-03 03:01:00
+-4.38884,15.25225,Quartier Funa,faible,tir,2025-01-02 16:25:00
+-4.45482,15.30863,Gombe,élevé,tir,2025-01-03 01:31:00
+-4.31594,15.2241,Kilembo,faible,agression,2025-01-02 22:15:00
+-4.42985,15.30509,Ndolo,élevé,temoin_agression,2025-01-03 03:38:00
+-4.34121,15.32064,Quartier Funa,modéré,vol,2025-01-03 01:04:00
+-4.44964,15.25441,Mont Ngaïlema,élevé,temoin_agression,2025-01-02 19:07:00
+-4.44233,15.2893,Gombe,faible,voleurs,2025-01-03 04:38:00
+-4.38399,15.24967,Royal,modéré,vol,2025-01-02 10:26:00
+-4.31942,15.34082,Limete,élevé,temoin_agression,2025-01-03 03:01:00
+-4.42595,15.31613,Kinshasa,faible,kuluna,2025-01-02 14:09:00
+-4.32245,15.21393,Kilembo,élevé,kuluna,2025-01-03 01:21:00
+-4.33909,15.22567,Matonge,faible,tir,2025-01-02 21:10:00
+-4.36739,15.24483,Royal,faible,tir,2025-01-02 20:43:00
+-4.3908,15.32837,Gombe,élevé,vol,2025-01-02 21:44:00
+-4.39663,15.22055,Matonge,modéré,voleurs,2025-01-03 02:02:00
+-4.44176,15.25084,Limete,faible,bagarre,2025-01-02 21:15:00
+-4.30887,15.22932,Kilembo,modéré,temoin_agression,2025-01-02 10:25:00
+-4.4118,15.29621,Ndolo,modéré,bagarre,2025-01-02 12:00:00
+-4.34324,15.21213,Gombe,faible,vol,2025-01-02 19:15:00
+-4.3985,15.33462,Mont Ngaïlema,faible,temoin_agression,2025-01-03 04:04:00
+-4.45847,15.34537,Ndolo,modéré,temoin_agression,2025-01-02 15:45:00
+-4.38879,15.31609,Mont Ngaïlema,faible,voleurs,2025-01-02 15:01:00
+-4.37239,15.23706,Kilembo,élevé,temoin_agression,2025-01-02 22:47:00
+-4.3567,15.28081,Ndolo,faible,attaque,2025-01-02 12:09:00
+-4.31651,15.2697,Kinshasa,modéré,attaque,2025-01-03 01:18:00
+-4.41362,15.34617,Limete,élevé,vol,2025-01-02 21:32:00
+-4.30147,15.22421,Ndolo,faible,police,2025-01-02 22:38:00
+-4.40979,15.24729,Limete,faible,tir,2025-01-02 16:34:00
+-4.3406,15.27981,Kinshasa,faible,bagarre,2025-01-03 05:42:00
+-4.31891,15.285,Matonge,faible,temoin_agression,2025-01-03 02:07:00
+-4.30944,15.29509,Quartier Funa,faible,temoin_agression,2025-01-02 17:30:00
+-4.42373,15.22182,Mont Ngaïlema,faible,attaque,2025-01-03 01:38:00
+-4.32422,15.29374,Ndolo,faible,bagarre,2025-01-02 17:06:00
+-4.45466,15.27858,Kinshasa,modéré,temoin_agression,2025-01-02 16:56:00
+-4.34878,15.29191,Mont Ngaïlema,modéré,tir,2025-01-03 04:46:00
+-4.44154,15.31281,Quartier Funa,élevé,tir,2025-01-03 02:05:00
+-4.41244,15.34429,Quartier Funa,faible,vol,2025-01-02 19:26:00
+-4.3262,15.21341,Matonge,élevé,voleurs,2025-01-03 00:29:00
+-4.3185,15.27272,Gombe,modéré,kuluna,2025-01-02 21:02:00
+-4.40326,15.23508,Royal,faible,vol,2025-01-02 13:49:00
+-4.40463,15.30409,Kinshasa,faible,police,2025-01-02 19:29:00
+-4.44994,15.27399,Ndolo,modéré,bagarre,2025-01-02 15:39:00
+-4.35175,15.32976,Limete,faible,voleurs,2025-01-02 22:28:00
+-4.4042,15.34955,Kilembo,modéré,tir,2025-01-02 20:15:00
+-4.41448,15.23131,Quartier Funa,faible,police,2025-01-02 21:12:00
+-4.32295,15.30716,Quartier Funa,modéré,attaque,2025-01-02 12:25:00
+-4.32744,15.31887,Limete,modéré,police,2025-01-02 16:41:00
+-4.44425,15.21883,Kilembo,faible,attaque,2025-01-02 10:55:00
+-4.33033,15.21854,Kinshasa,élevé,bagarre,2025-01-03 01:47:00
+-4.39399,15.25007,Kilembo,élevé,kuluna,2025-01-02 18:23:00
+-4.37595,15.2639,Gombe,élevé,kuluna,2025-01-02 19:52:00
+-4.44027,15.21064,Kilembo,modéré,kuluna,2025-01-02 13:10:00
+-4.34195,15.22044,Mont Ngaïlema,faible,agression,2025-01-03 00:59:00
+-4.32631,15.31384,Matonge,faible,police,2025-01-02 23:57:00
+-4.36759,15.31011,Matonge,modéré,kuluna,2025-01-02 18:17:00
+-4.40887,15.2818,Gombe,élevé,voleurs,2025-01-03 02:08:00
+-4.40892,15.24775,Limete,élevé,kuluna,2025-01-02 22:43:00
+-4.41771,15.22277,Ndolo,élevé,voleurs,2025-01-02 18:00:00
+-4.32017,15.22772,Royal,faible,voleurs,2025-01-02 19:36:00
+-4.32816,15.33299,Royal,faible,kuluna,2025-01-03 04:04:00
+-4.4485,15.25038,Matonge,faible,voleurs,2025-01-03 01:53:00
+-4.45572,15.28585,Mont Ngaïlema,faible,temoin_agression,2025-01-02 23:17:00
+-4.3236,15.21084,Limete,faible,temoin_agression,2025-01-02 12:01:00
+-4.3665,15.26985,Matonge,faible,tir,2025-01-03 04:19:00
+-4.42804,15.30772,Royal,faible,police,2025-01-02 21:46:00
+-4.44732,15.3155,Limete,faible,tir,2025-01-02 18:49:00
+-4.34093,15.34067,Matonge,modéré,kuluna,2025-01-02 11:22:00
+-4.39838,15.32109,Matonge,modéré,tir,2025-01-03 00:56:00
+-4.31188,15.25429,Kilembo,faible,temoin_agression,2025-01-02 12:14:00
+-4.43774,15.2132,Quartier Funa,faible,kuluna,2025-01-02 15:08:00
+-4.41901,15.31075,Gombe,élevé,kuluna,2025-01-02 17:21:00
+-4.4295,15.32553,Kilembo,élevé,voleurs,2025-01-02 17:08:00
+-4.34275,15.34196,Gombe,élevé,vol,2025-01-03 04:47:00
+-4.42734,15.31703,Limete,faible,police,2025-01-02 14:31:00
+-4.36278,15.2204,Matonge,élevé,agression,2025-01-02 18:44:00
+-4.38412,15.27251,Limete,faible,voleurs,2025-01-02 23:09:00
+-4.31258,15.25007,Gombe,faible,voleurs,2025-01-02 20:57:00
+-4.35932,15.26437,Quartier Funa,faible,temoin_agression,2025-01-02 10:30:00
+-4.33095,15.29959,Kinshasa,faible,police,2025-01-02 21:27:00
+-4.31329,15.23097,Kilembo,modéré,vol,2025-01-02 12:28:00
+-4.39796,15.24865,Quartier Funa,faible,police,2025-01-02 19:03:00
+-4.37523,15.34106,Matonge,élevé,voleurs,2025-01-03 00:57:00
+-4.33689,15.28842,Royal,faible,bagarre,2025-01-03 00:13:00
+-4.33673,15.34161,Matonge,faible,kuluna,2025-01-03 05:00:00
+-4.4504,15.22153,Ndolo,faible,agression,2025-01-03 01:49:00
+-4.45723,15.23204,Kinshasa,élevé,tir,2025-01-03 02:34:00
+-4.38882,15.34155,Gombe,modéré,attaque,2025-01-02 13:11:00
+-4.32328,15.29063,Kinshasa,faible,attaque,2025-01-02 14:10:00
+-4.34967,15.33523,Kilembo,modéré,police,2025-01-02 11:25:00
+-4.39772,15.31935,Gombe,élevé,kuluna,2025-01-02 22:05:00
+-4.41513,15.30522,Kinshasa,faible,temoin_agression,2025-01-02 16:02:00
+-4.43681,15.31038,Ndolo,modéré,attaque,2025-01-02 20:02:00
+-4.32795,15.23301,Mont Ngaïlema,élevé,police,2025-01-02 11:00:00
+-4.45278,15.33319,Gombe,modéré,kuluna,2025-01-02 22:21:00
+-4.32798,15.25001,Mont Ngaïlema,modéré,tir,2025-01-03 04:55:00
+-4.30266,15.31035,Matonge,élevé,bagarre,2025-01-02 17:58:00
+-4.34917,15.24859,Matonge,modéré,bagarre,2025-01-02 17:27:00
+-4.43397,15.31859,Royal,faible,tir,2025-01-02 20:21:00
+-4.39221,15.33141,Limete,modéré,temoin_agression,2025-01-02 16:35:00
+-4.41194,15.29996,Kinshasa,faible,police,2025-01-02 18:53:00
+-4.4174,15.2132,Kinshasa,modéré,bagarre,2025-01-02 23:06:00
+-4.44362,15.24232,Matonge,élevé,bagarre,2025-01-02 19:39:00
+-4.44833,15.28101,Quartier Funa,faible,voleurs,2025-01-02 14:32:00
+-4.33123,15.27367,Quartier Funa,faible,bagarre,2025-01-03 00:41:00
+-4.35913,15.23246,Limete,élevé,agression,2025-01-02 16:32:00
+-4.45707,15.22581,Matonge,faible,police,2025-01-03 00:02:00
+-4.31047,15.30734,Mont Ngaïlema,modéré,bagarre,2025-01-02 21:16:00
+-4.44077,15.26787,Kilembo,modéré,bagarre,2025-01-02 16:00:00
+-4.45857,15.2282,Matonge,faible,kuluna,2025-01-03 00:34:00
+-4.35787,15.31732,Kilembo,faible,vol,2025-01-02 18:43:00
+-4.36504,15.22076,Gombe,faible,voleurs,2025-01-02 15:55:00
+-4.37114,15.32299,Gombe,faible,temoin_agression,2025-01-02 12:16:00
+-4.39739,15.34513,Gombe,modéré,police,2025-01-03 05:15:00
+-4.36241,15.27554,Quartier Funa,modéré,attaque,2025-01-02 23:30:00
+-4.31734,15.2629,Limete,faible,kuluna,2025-01-02 13:40:00
+-4.33634,15.32059,Matonge,élevé,police,2025-01-03 01:58:00
+-4.38963,15.25282,Kilembo,élevé,voleurs,2025-01-02 16:23:00
+-4.44194,15.25721,Mont Ngaïlema,modéré,kuluna,2025-01-02 17:02:00
+-4.42841,15.33212,Kinshasa,modéré,tir,2025-01-03 02:38:00
+-4.44004,15.28649,Quartier Funa,faible,tir,2025-01-02 21:43:00
+-4.44328,15.26838,Mont Ngaïlema,modéré,temoin_agression,2025-01-02 20:14:00
+-4.34227,15.29321,Matonge,faible,attaque,2025-01-03 03:07:00
+-4.36009,15.24536,Limete,élevé,voleurs,2025-01-02 14:48:00
+-4.43704,15.28,Matonge,élevé,police,2025-01-03 04:22:00
+-4.30123,15.34555,Kinshasa,faible,vol,2025-01-02 17:19:00
+-4.43609,15.23851,Limete,faible,voleurs,2025-01-02 22:38:00
+-4.31446,15.32583,Kinshasa,modéré,attaque,2025-01-02 21:00:00
+-4.33239,15.29874,Mont Ngaïlema,modéré,vol,2025-01-02 19:52:00
+-4.37478,15.29854,Ndolo,élevé,bagarre,2025-01-02 16:24:00
+-4.42132,15.2878,Kinshasa,faible,voleurs,2025-01-02 17:11:00
+-4.44248,15.32279,Kinshasa,faible,tir,2025-01-03 01:43:00
+-4.36952,15.26938,Kinshasa,élevé,voleurs,2025-01-02 16:08:00
+-4.31866,15.34527,Mont Ngaïlema,faible,voleurs,2025-01-02 22:06:00
+-4.384,15.32762,Kinshasa,modéré,vol,2025-01-02 21:56:00
+-4.32394,15.26325,Matonge,faible,vol,2025-01-03 05:18:00
+-4.36436,15.30064,Kilembo,faible,tir,2025-01-03 00:54:00
+-4.34166,15.22498,Mont Ngaïlema,faible,agression,2025-01-02 21:30:00
+-4.38008,15.21961,Matonge,faible,agression,2025-01-03 03:44:00
+-4.33933,15.22888,Kinshasa,modéré,temoin_agression,2025-01-02 13:06:00
+-4.38493,15.22909,Gombe,faible,bagarre,2025-01-03 05:34:00
+-4.41618,15.235,Kinshasa,élevé,agression,2025-01-02 16:20:00
+-4.40997,15.25582,Royal,modéré,voleurs,2025-01-02 22:37:00
+-4.39147,15.34244,Limete,faible,police,2025-01-03 01:11:00
+-4.43313,15.30781,Gombe,élevé,attaque,2025-01-02 21:13:00
+-4.32748,15.32145,Ndolo,faible,police,2025-01-02 23:59:00
+-4.36728,15.31599,Mont Ngaïlema,élevé,kuluna,2025-01-02 14:52:00
+-4.32055,15.22778,Gombe,faible,agression,2025-01-02 21:51:00
+-4.42377,15.34611,Mont Ngaïlema,modéré,police,2025-01-03 05:29:00
+-4.43269,15.21289,Kinshasa,faible,agression,2025-01-03 02:09:00
+-4.44709,15.249,Kilembo,modéré,kuluna,2025-01-02 21:24:00
+-4.39318,15.2646,Kilembo,faible,kuluna,2025-01-02 17:25:00
+-4.32198,15.32754,Kinshasa,faible,attaque,2025-01-03 02:52:00
+-4.42828,15.29319,Kilembo,modéré,bagarre,2025-01-03 01:01:00
+-4.43385,15.28193,Royal,faible,temoin_agression,2025-01-02 10:14:00
+-4.32679,15.22532,Gombe,élevé,police,2025-01-03 04:29:00
+-4.45421,15.31765,Mont Ngaïlema,faible,temoin_agression,2025-01-02 19:36:00
+-4.31003,15.24683,Quartier Funa,faible,police,2025-01-02 13:43:00
+-4.33158,15.27698,Mont Ngaïlema,modéré,bagarre,2025-01-02 20:51:00
+-4.30155,15.22021,Royal,faible,bagarre,2025-01-03 01:17:00
+-4.40232,15.34387,Quartier Funa,faible,kuluna,2025-01-03 05:25:00
+-4.38602,15.23711,Ndolo,élevé,tir,2025-01-03 01:57:00
+-4.30048,15.32801,Royal,modéré,kuluna,2025-01-02 15:13:00
+-4.34916,15.33437,Kinshasa,élevé,police,2025-01-03 01:06:00
+-4.31134,15.24656,Kilembo,modéré,bagarre,2025-01-03 01:07:00
+-4.3665,15.23664,Mont Ngaïlema,faible,bagarre,2025-01-02 10:43:00
+-4.40711,15.28683,Quartier Funa,faible,attaque,2025-01-03 03:13:00
+-4.37733,15.22442,Mont Ngaïlema,faible,police,2025-01-02 11:32:00
+-4.39156,15.30913,Mont Ngaïlema,faible,voleurs,2025-01-02 13:41:00
+-4.3814,15.27855,Quartier Funa,faible,temoin_agression,2025-01-03 03:22:00
+-4.44371,15.24762,Gombe,faible,agression,2025-01-03 00:26:00
+-4.33476,15.25949,Mont Ngaïlema,faible,tir,2025-01-02 22:36:00
+-4.30584,15.2397,Limete,modéré,voleurs,2025-01-02 20:19:00
+-4.37364,15.32701,Matonge,faible,attaque,2025-01-02 21:29:00
+-4.30454,15.29685,Kinshasa,faible,bagarre,2025-01-03 03:33:00
+-4.42862,15.3218,Mont Ngaïlema,faible,attaque,2025-01-03 05:15:00
+-4.30309,15.32698,Kilembo,élevé,kuluna,2025-01-03 01:11:00
+-4.36007,15.26095,Kinshasa,élevé,kuluna,2025-01-02 14:20:00
+-4.36661,15.2666,Quartier Funa,faible,tir,2025-01-02 22:18:00
+-4.41405,15.31063,Limete,faible,temoin_agression,2025-01-03 01:52:00
+-4.35766,15.23764,Quartier Funa,modéré,bagarre,2025-01-02 23:11:00
+-4.40373,15.31766,Limete,modéré,vol,2025-01-02 18:21:00
+-4.30941,15.33445,Kinshasa,modéré,temoin_agression,2025-01-02 22:24:00
+-4.31001,15.32355,Kinshasa,faible,vol,2025-01-02 18:42:00
+-4.34864,15.33698,Ndolo,modéré,bagarre,2025-01-03 02:46:00
+-4.35238,15.26568,Mont Ngaïlema,faible,bagarre,2025-01-03 04:27:00
+-4.3335,15.22742,Limete,faible,police,2025-01-03 01:39:00
+-4.33052,15.27466,Ndolo,élevé,attaque,2025-01-02 15:04:00
+-4.32423,15.26798,Quartier Funa,élevé,vol,2025-01-03 04:23:00
+-4.41032,15.29218,Kinshasa,modéré,voleurs,2025-01-02 12:47:00
+-4.30091,15.309,Royal,élevé,vol,2025-01-02 19:14:00
+-4.38277,15.28935,Limete,faible,police,2025-01-03 00:19:00
+-4.3203,15.31768,Limete,élevé,agression,2025-01-03 04:29:00
+-4.30254,15.34564,Quartier Funa,faible,temoin_agression,2025-01-02 23:39:00
+-4.43226,15.34241,Limete,faible,voleurs,2025-01-02 10:35:00
+-4.43325,15.3178,Kilembo,modéré,vol,2025-01-02 22:23:00
+-4.38985,15.31565,Mont Ngaïlema,faible,voleurs,2025-01-02 23:06:00
+-4.38652,15.25156,Mont Ngaïlema,élevé,police,2025-01-02 21:58:00
+-4.45663,15.22577,Limete,modéré,agression,2025-01-02 18:43:00
+-4.44165,15.21257,Mont Ngaïlema,faible,voleurs,2025-01-03 00:15:00
+-4.36101,15.30793,Kinshasa,élevé,police,2025-01-02 15:30:00
+-4.40356,15.26819,Kilembo,élevé,bagarre,2025-01-02 12:45:00
+-4.38758,15.2864,Royal,modéré,bagarre,2025-01-02 16:02:00
+-4.44832,15.33887,Limete,faible,voleurs,2025-01-02 13:34:00
+-4.4147,15.23059,Limete,faible,tir,2025-01-02 13:43:00
+-4.30512,15.31785,Matonge,faible,attaque,2025-01-02 19:07:00
+-4.35195,15.23675,Kilembo,élevé,voleurs,2025-01-02 14:58:00
+-4.39817,15.24656,Mont Ngaïlema,modéré,police,2025-01-02 19:10:00
+-4.31076,15.3227,Limete,élevé,voleurs,2025-01-02 19:56:00
+-4.41904,15.23747,Ndolo,faible,temoin_agression,2025-01-02 23:47:00
+-4.42304,15.33334,Quartier Funa,modéré,vol,2025-01-02 16:38:00
+-4.33833,15.33121,Ndolo,élevé,tir,2025-01-03 03:08:00
+-4.45728,15.33003,Kinshasa,modéré,bagarre,2025-01-02 19:42:00
+-4.36143,15.31458,Gombe,élevé,attaque,2025-01-02 21:54:00
+-4.32845,15.30721,Kilembo,faible,attaque,2025-01-02 21:37:00
+-4.31862,15.33732,Limete,faible,attaque,2025-01-03 01:59:00
+-4.31041,15.24463,Kinshasa,faible,attaque,2025-01-02 13:00:00
+-4.42145,15.23018,Quartier Funa,faible,voleurs,2025-01-02 14:51:00
+-4.35738,15.28167,Quartier Funa,faible,temoin_agression,2025-01-02 10:28:00
+-4.36271,15.31829,Gombe,faible,agression,2025-01-02 10:34:00
+-4.33842,15.28096,Kilembo,modéré,bagarre,2025-01-02 12:46:00
+-4.35134,15.28195,Mont Ngaïlema,modéré,temoin_agression,2025-01-02 11:11:00
+-4.30483,15.3102,Kilembo,faible,agression,2025-01-02 19:35:00
+-4.44786,15.22318,Kinshasa,élevé,bagarre,2025-01-02 19:15:00
+-4.35948,15.2993,Quartier Funa,faible,police,2025-01-02 13:36:00
+-4.37873,15.23357,Gombe,faible,tir,2025-01-02 11:23:00
+-4.39795,15.23906,Mont Ngaïlema,faible,bagarre,2025-01-03 04:52:00
+-4.44402,15.30154,Kinshasa,faible,kuluna,2025-01-02 23:38:00
+-4.35466,15.3339,Ndolo,modéré,vol,2025-01-02 21:07:00
+-4.31539,15.31732,Kilembo,élevé,agression,2025-01-02 17:33:00
+-4.32736,15.26376,Matonge,élevé,vol,2025-01-03 02:03:00
+-4.33184,15.23917,Matonge,élevé,bagarre,2025-01-02 14:56:00
+-4.35941,15.2476,Ndolo,faible,tir,2025-01-02 19:27:00
+-4.44912,15.31636,Limete,faible,attaque,2025-01-02 23:00:00
+-4.4405,15.34607,Ndolo,modéré,agression,2025-01-03 03:48:00
+-4.30241,15.25329,Kinshasa,faible,attaque,2025-01-02 16:48:00
+-4.36639,15.24126,Gombe,modéré,tir,2025-01-03 05:28:00
+-4.31454,15.22488,Quartier Funa,faible,police,2025-01-03 04:10:00
+-4.35593,15.25165,Ndolo,modéré,tir,2025-01-02 19:27:00
+-4.34249,15.25344,Royal,faible,voleurs,2025-01-02 18:36:00
+-4.45027,15.25888,Mont Ngaïlema,modéré,bagarre,2025-01-03 00:51:00
+-4.35334,15.23413,Quartier Funa,faible,bagarre,2025-01-02 21:36:00
+-4.37404,15.23214,Quartier Funa,élevé,tir,2025-01-03 02:52:00
+-4.31201,15.30268,Matonge,élevé,bagarre,2025-01-02 21:08:00
+-4.34755,15.23696,Matonge,modéré,bagarre,2025-01-02 20:44:00
+-4.31531,15.31733,Mont Ngaïlema,faible,agression,2025-01-02 16:19:00
+-4.36555,15.3112,Kilembo,élevé,attaque,2025-01-03 03:34:00
+-4.45849,15.32522,Matonge,modéré,voleurs,2025-01-02 20:45:00
+-4.34021,15.22105,Limete,faible,agression,2025-01-03 02:26:00
+-4.30949,15.28273,Kilembo,élevé,voleurs,2025-01-03 00:21:00
+-4.44681,15.29631,Mont Ngaïlema,modéré,voleurs,2025-01-02 12:27:00
+-4.45106,15.33918,Quartier Funa,faible,agression,2025-01-02 11:49:00
+-4.31266,15.23689,Kinshasa,modéré,voleurs,2025-01-02 22:20:00
+-4.34383,15.252,Limete,faible,attaque,2025-01-02 10:38:00
+-4.45526,15.28321,Limete,modéré,police,2025-01-02 12:02:00
+-4.38219,15.26988,Royal,élevé,temoin_agression,2025-01-02 16:52:00
+-4.30555,15.31706,Kinshasa,élevé,kuluna,2025-01-02 14:01:00
+-4.43447,15.26072,Kilembo,modéré,vol,2025-01-02 20:06:00
+-4.36744,15.26807,Ndolo,faible,voleurs,2025-01-02 22:21:00
+-4.45936,15.29312,Royal,modéré,attaque,2025-01-02 15:20:00
+-4.30696,15.2865,Gombe,faible,police,2025-01-02 15:35:00
+-4.30463,15.29291,Matonge,modéré,tir,2025-01-02 19:58:00
+-4.40922,15.25671,Limete,faible,police,2025-01-02 15:21:00
+-4.42915,15.27204,Limete,faible,attaque,2025-01-02 14:47:00
+-4.30472,15.31228,Limete,modéré,police,2025-01-02 18:31:00
+-4.41209,15.26962,Kilembo,élevé,police,2025-01-02 17:24:00
+-4.39808,15.27101,Mont Ngaïlema,élevé,vol,2025-01-03 01:42:00
+-4.31382,15.28145,Royal,faible,bagarre,2025-01-02 18:33:00
+-4.43588,15.32567,Matonge,modéré,bagarre,2025-01-02 20:21:00
+-4.38924,15.25597,Kilembo,élevé,temoin_agression,2025-01-02 20:24:00
+-4.45141,15.26239,Ndolo,faible,agression,2025-01-02 21:12:00
+-4.40374,15.31438,Matonge,faible,agression,2025-01-02 13:31:00
+-4.38105,15.30241,Kilembo,élevé,bagarre,2025-01-03 01:30:00
+-4.33108,15.30218,Kinshasa,modéré,kuluna,2025-01-03 03:46:00
+-4.43125,15.22615,Gombe,élevé,kuluna,2025-01-02 15:11:00
+-4.34715,15.22919,Gombe,modéré,kuluna,2025-01-02 16:20:00
+-4.43151,15.22852,Kinshasa,modéré,police,2025-01-02 11:26:00
+-4.45262,15.23779,Quartier Funa,faible,police,2025-01-02 21:22:00
+-4.30664,15.31535,Mont Ngaïlema,élevé,voleurs,2025-01-02 23:13:00
+-4.42784,15.21699,Limete,modéré,temoin_agression,2025-01-03 02:58:00
+-4.385,15.3442,Gombe,Afaible,police,2025-01-02 22:39:00
+-4.37349,15.32189,Limete,faible,tir,2025-01-03 04:31:00
+-4.38896,15.31615,Royal,élevé,police,2025-01-03 01:33:00
+-4.31364,15.22135,Ndolo,modéré,voleurs,2025-01-03 05:02:00
+-4.32675,15.2278,Ndolo,faible,kuluna,2025-01-03 05:08:00
+-4.37623,15.32557,Quartier Funa,faible,temoin_agression,2025-01-02 21:30:00
+-4.37101,15.29557,Mont Ngaïlema,modéré,police,2025-01-03 03:09:00
+-4.30442,15.34292,Ndolo,faible,tir,2025-01-02 14:03:00
+-4.45929,15.24577,Quartier Funa,faible,agression,2025-01-03 05:17:00
+-4.4297,15.21746,Matonge,élevé,kuluna,2025-01-02 23:28:00
+-4.31388,15.3131,Kilembo,faible,attaque,2025-01-02 12:15:00
+-4.44676,15.21594,Ndolo,élevé,bagarre,2025-01-03 01:38:00
+-4.33714,15.23001,Gombe,faible,vol,2025-01-02 15:20:00
+-4.44351,15.32721,Gombe,faible,voleurs,2025-01-02 18:39:00
+-4.4164,15.21642,Gombe,élevé,vol,2025-01-02 17:20:00
+-4.34647,15.33398,Kinshasa,modéré,vol,2025-01-02 11:14:00
+-4.35948,15.28053,Royal,faible,kuluna,2025-01-02 21:12:00
+-4.37887,15.21322,Kilembo,faible,voleurs,2025-01-02 11:20:00

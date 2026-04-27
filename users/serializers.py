@@ -91,6 +91,7 @@ class RefreshTokenSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Sérialiseur pour afficher les infos des utilisateurs"""
+    type_user = serializers.CharField(source="type_user.code_typeUser", read_only=True)
 
     class Meta:
         model = User
@@ -102,6 +103,7 @@ class UserSerializer(serializers.ModelSerializer):
             "profilePicture_user",
             "is_verified",
             "sexe_user",
+            "type_user", 
         )
 
 
@@ -273,11 +275,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     Sérialiseur dédié aux mises à jour
     (exclut les champs sensibles comme le type_user)
     """
+    type_user = serializers.CharField(source="type_user.code_typeUser", read_only=True)
     class Meta:
         model = User
         fields = (
-            "username", "email", "phone_user",
-            "profilePicture_user", "sexe_user"
+             "id",
+            "username",
+            "email",
+            "phone_user",
+            "profilePicture_user",
+            "is_verified",
+            "sexe_user",
+            "type_user", 
         )
         extra_kwargs = {
             'email': {'required': False},

@@ -8,10 +8,11 @@ from .views import (
     UserListView,
     CreatePriviligeView,
     UserRetrieveUpdateDestroyView,
-    UserRetrieveUpdateDestroyView,
     LogoutView,
     UserActivityListView,
-    ExportUserActivityView,PasswordResetRequestView,PasswordResetConfirmView,
+    ExportUserActivityView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -22,7 +23,7 @@ urlpatterns = [
     path("user/resend-code/", ResendVerificationCodeView.as_view(), name="resend-code"),
     path("user/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("admin/list/", UserListView.as_view(), name="user-list"),
-    path("me/", UserRetrieveUpdateDestroyView.as_view(), name="user-me"),
+    path("me/<int:pk>/", UserRetrieveUpdateDestroyView.as_view(), name="user-me"),
     path(
         "admin/users/<int:pk>/",
         UserRetrieveUpdateDestroyView.as_view(),

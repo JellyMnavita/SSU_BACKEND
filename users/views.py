@@ -1,4 +1,3 @@
-
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -80,7 +79,7 @@ class TokenRefreshView(APIView):
                     key="refresh_token",
                     value=str(new_refresh),
                     httponly=True,
-                    secure=True,
+                    secure=not settings.DEBUG,
                     samesite="Lax",
                     max_age=3 * 24 * 60 * 60,
                 )
@@ -115,7 +114,7 @@ class LoginView(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=True,  # si en production avec HTTPS
+                secure=not settings.DEBUG,  # cookie local HTTP en DEBUG, HTTPS en production
                 samesite="Lax",  # ou "None" si domaine différent
                 max_age=3 * 24 * 60 * 60  # 3 jours
             )
@@ -213,19 +212,25 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     API pour :
     - Voir son profil (GET)
     - Modifier son profil (PATCH/PUT)
-    - Supprimer son compte (DELETE)
+    - Désactiver son compte (DELETE)
     """
 
     queryset = User.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == "GET":
-            return UserSerializer  # Pour la lecture
+            return UserSerializer
         elif self.request.method in ["PUT", "PATCH"]:
-            return UserUpdateSerializer  # Pour les modifications
-        return UserSerializer  # Fallback
+            return UserUpdateSerializer
+        return UserSerializer
 
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]  # Nouvelle permission
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.is_active = False
+        user.save()
+        return Response({"message": "Compte désactivé avec succès."}, status=status.HTTP_204_NO_CONTENT)
 
 class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):
     """

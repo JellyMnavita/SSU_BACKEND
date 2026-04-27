@@ -27,6 +27,7 @@ class IsAdminUserType(BasePermission):
     Permission personnalisée qui vérifie que l'utilisateur est de type ADMIN
     """
     def has_permission(self, request, view):
+        
         return (
             request.user.is_authenticated and 
             request.user.type_user.code_typeUser == 'ADMIN'
@@ -44,3 +45,11 @@ class IsOwnerOrAdmin(BasePermission):
 class IsGovUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.type_user.code_typeUser == 'GOV'
+    
+class IsAdminOrGov(BasePermission):
+    """Vérifie que l'utilisateur est un administrateur ou un service gouvernemental"""
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.type_user.code_typeUser in ['ADMIN', 'GOV']
+        )

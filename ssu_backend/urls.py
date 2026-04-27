@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/", include("locations.urls")),  # Ajoute les routes de l'API location
     path("api/", include("reports.urls")),  # Ajoute les routes de l'API location
     path("api/", include("scrapping.urls")),  # Ajoute les routes de l'API scrapping
+    path("api/", include("prediction.urls")),  # Ajoute les routes de l'API prediction
 ]
 
 

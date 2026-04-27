@@ -4,11 +4,16 @@ from rest_framework import status
 import requests
 from bs4 import BeautifulSoup
 from .serializers import ScrappingSerializer
+from django.core.cache import cache
 
 URL = "https://congorassure.cd/index.php/securite"
 
 class GetScrappingView(APIView):
     def get(self, request):
+        cached_data = cache.get("scrapping_articles")
+        if cached_data:
+            return Response(cached_data)
+
         try:
             response = requests.get(URL, timeout=10)
             response.raise_for_status()
@@ -48,4 +53,5 @@ class GetScrappingView(APIView):
             )
 
         serializer = ScrappingSerializer(articles, many=True)
+        cache.set("scrapping_articles", serializer.data, timeout=60*30)  # 10 min
         return Response(serializer.data)

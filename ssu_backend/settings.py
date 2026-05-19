@@ -14,7 +14,16 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"   
 
-ALLOWED_HOSTS = ["192.168.101.122", "localhost", "127.0.0.1", "http://192.168.101.120"]
+def _split_env_list(value):
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _host_only(value):
+    return value.replace("http://", "").replace("https://", "").split("/")[0]
+
+
+ALLOWED_HOSTS = _split_env_list(os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.101.120,192.168.101.122"))
+ALLOWED_HOSTS = [_host_only(host) for host in ALLOWED_HOSTS]
 
 # Application definition
 
@@ -166,23 +175,32 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Production
 MEDIA_URL = "/media/"  # Si le logo est uploadé via admin
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+LOCAL_DEV_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://192.168.101.120",
+    "http://192.168.101.120:3000",
+    "http://192.168.101.120:5173",
+    "http://192.168.101.120:5174",
+    "http://192.168.101.122",
+    "http://192.168.101.122:3000",
+    "http://192.168.101.122:5173",
+    "http://192.168.101.122:5174",
+]
+
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if origin.strip()
 ]
 if DEBUG and not CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ]
+    CORS_ALLOWED_ORIGINS = LOCAL_DEV_ORIGINS.copy()
 if DEBUG:
-    for origin in [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ]:
+    for origin in LOCAL_DEV_ORIGINS:
         if origin not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(origin)
 
@@ -195,19 +213,9 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 if DEBUG and not CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ]
+    CSRF_TRUSTED_ORIGINS = LOCAL_DEV_ORIGINS.copy()
 if DEBUG:
-    for origin in [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ]:
+    for origin in LOCAL_DEV_ORIGINS:
         if origin not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS.append(origin)
 
@@ -251,4 +259,3 @@ except ModuleNotFoundError:
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
-

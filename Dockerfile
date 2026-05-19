@@ -15,9 +15,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-# Copier et rendre exécutable le script entrypoint
+# Copier et rendre executables les scripts d'entree
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY worker-entrypoint.sh /worker-entrypoint.sh
+RUN chmod +x /entrypoint.sh /worker-entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gunicorn", "ssu_backend.wsgi:application", "--bind", "0.0.0.0:8000"]

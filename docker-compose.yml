@@ -29,10 +29,13 @@ services:
       retries: 5
 
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: ssu_backend/Dockerfile
     command: gunicorn ssu_backend.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - .:/app
+      - ../nlp_shared:/app/nlp_shared
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     ports:
@@ -54,10 +57,13 @@ services:
     restart: always
 
   celery:
-    build: .
+    build:
+      context: ..
+      dockerfile: ssu_backend/Dockerfile
     command: celery -A ssu_backend worker --loglevel=info --pool=solo
     volumes:
       - .:/app
+      - ../nlp_shared:/app/nlp_shared
     env_file:
       - .env
     environment:
@@ -75,10 +81,13 @@ services:
     restart: always
 
   celery-beat:
-    build: .
+    build:
+      context: ..
+      dockerfile: ssu_backend/Dockerfile
     command: celery -A ssu_backend beat --loglevel=info
     volumes:
       - .:/app
+      - ../nlp_shared:/app/nlp_shared
     env_file:
       - .env
     environment:

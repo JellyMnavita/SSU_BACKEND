@@ -13,10 +13,13 @@ from .serializers import (
     LoginSerializer,
     RefreshTokenSerializer,
     CreatePriviligeSerializer,
+    AdminUserUpdateSerializer,
     UserUpdateSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    ChangePasswordSerializer,
+    NotificationPreferencesSerializer,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
@@ -42,6 +45,15 @@ from django.conf import settings
 
 
 from rest_framework import status
+from .session_utils import (
+    get_refresh_jti,
+    list_active_sessions,
+    register_user_session,
+    remove_user_session,
+    revoke_other_sessions,
+    revoke_session,
+)
+from citizens.services import link_citizen_reports_to_user
 
 User = get_user_model()
 
@@ -75,6 +87,8 @@ class TokenRefreshView(APIView):
 
                 # Créer un nouveau refresh token
                 new_refresh = RefreshToken.for_user(user)
+                remove_user_session(user, str(old_refresh.get("jti")))
+                register_user_session(user, str(new_refresh["jti"]), request)
                 response.set_cookie(
                     key="refresh_token",
                     value=str(new_refresh),
@@ -102,6 +116,7 @@ class LoginView(APIView):
         if serializer.is_valid():
             
             user = serializer.validated_data["user"]
+            link_citizen_reports_to_user(user)
             # Générer les tokens JWT
             refresh = RefreshToken.for_user(user)
             response = Response({
@@ -118,6 +133,7 @@ class LoginView(APIView):
                 samesite="Lax",  # ou "None" si domaine différent
                 max_age=3 * 24 * 60 * 60  # 3 jours
             )
+            register_user_session(user, str(refresh["jti"]), request)
             return response
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -131,6 +147,7 @@ class LogoutView(APIView):
             refresh_token = request.COOKIES.get("refresh_token")
             if refresh_token:
                 token = RefreshToken(refresh_token)
+                remove_user_session(request.user, str(token.get("jti")))
                 token.blacklist()
 
             response = Response({"message": "Déconnexion réussie"}, status=status.HTTP_200_OK)
@@ -164,8 +181,13 @@ class VerifyAccountView(APIView):
             user = User.objects.get(email=email)
             user.is_verified = True
             user.save()
+            linked = link_citizen_reports_to_user(user)
             return Response(
-                {"message": "Compte vérifié avec succès!"}, status=status.HTTP_200_OK
+                {
+                    "message": "Compte vérifié avec succès!",
+                    "linked_reports": linked,
+                },
+                status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -220,7 +242,12 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method == "GET":
             return UserSerializer
-        elif self.request.method in ["PUT", "PATCH"]:
+        if self.request.method in ["PUT", "PATCH"]:
+            if (
+                self.request.user.is_authenticated
+                and getattr(self.request.user.type_user, "code_typeUser", None) == "ADMIN"
+            ):
+                return AdminUserUpdateSerializer
             return UserUpdateSerializer
         return UserSerializer
 
@@ -228,9 +255,33 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
+        mode = (request.query_params.get("mode") or "").strip().lower()
+        if mode == "delete":
+            # Suppression "logique" : anonymise les données et désactive le compte
+            # (évite de casser des FK vers reports, sessions, etc.).
+            user.is_active = False
+            user.is_verified = False
+            user.email = f"deleted+{user.id}@example.invalid"
+            user.username = f"deleted_{user.id}"
+            user.phone_user = ""
+            user.sexe_user = ""
+            user.agreementTermsUse_user = False
+            try:
+                user.profilePicture_user = None
+            except Exception:
+                pass
+            user.save()
+            return Response(
+                {"message": "Compte supprimé (anonymisé) avec succès."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
         user.is_active = False
         user.save()
-        return Response({"message": "Compte désactivé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Compte désactivé avec succès."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -321,15 +372,19 @@ class PasswordResetRequestView(APIView):
             )  # Version texte pour les clients mail simples
 
             # Envoi de l'email
-            email = EmailMultiAlternatives(
-                subject,
-                text_content,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                reply_to=[settings.SUPPORT_EMAIL],
+            from users.email_utils import send_transactional_email
+
+            send_transactional_email(
+                subject="Réinitialisation de votre mot de passe — SSU Bokengi",
+                plain_body=(
+                    f"Bonjour {user.username},\n\n"
+                    f"Pour réinitialiser votre mot de passe, ouvrez ce lien (valide 1 h) :\n"
+                    f"{reset_link}\n\n"
+                    f"Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n"
+                ),
+                html_body=html_content,
+                to=[user.email],
             )
-            email.attach_alternative(html_content, "text/html")
-            email.send()
 
             return Response({"message": "Un email de réinitialisation a été envoyé."})
         return Response(serializer.errors, status=400)
@@ -387,3 +442,72 @@ class PasswordResetConfirmView(APIView):
         OutstandingToken.objects.filter(user=user).delete()
 
         return Response({"message": "Mot de passe réinitialisé avec succès."})
+
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        current_password = serializer.validated_data["current_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        if not user.check_password(current_password):
+            return Response(
+                {"current_password": ["Mot de passe actuel incorrect."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        current_jti = get_refresh_jti(request)
+        revoke_other_sessions(user, keep_jti=current_jti)
+
+        return Response({"message": "Mot de passe modifié avec succès."})
+
+
+class UserNotificationPreferencesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = NotificationPreferencesSerializer(request.user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        serializer = NotificationPreferencesSerializer(data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        prefs = dict(request.user.notification_preferences or {})
+        prefs.update(serializer.validated_data)
+        request.user.notification_preferences = prefs
+        request.user.save(update_fields=["notification_preferences"])
+
+        return Response(NotificationPreferencesSerializer(request.user).data)
+
+
+class UserSessionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        current_jti = get_refresh_jti(request)
+        sessions = list_active_sessions(request.user, current_jti=current_jti)
+        return Response({"sessions": sessions, "current_jti": current_jti})
+
+
+class UserSessionRevokeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, jti: str):
+        current_jti = get_refresh_jti(request)
+        if not revoke_session(request.user, jti, current_jti=current_jti):
+            return Response(
+                {"error": "Impossible de révoquer la session courante."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({"message": "Session déconnectée."})

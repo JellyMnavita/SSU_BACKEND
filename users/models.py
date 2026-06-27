@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -49,6 +49,12 @@ class User(AbstractUser):
         ('M', 'Masculin'),
         ('F', 'Féminin')
     ]
+
+    ACCOUNT_TIER_CHOICES = [
+        ("NORMAL", "Normal"),
+        ("PRO", "Pro"),
+        ("PREMIUM", "Premium"),
+    ]
     
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
@@ -63,7 +69,14 @@ class User(AbstractUser):
     
     password_reset_token = models.CharField(max_length=100, blank=True, null=True)
     password_reset_token_expiry = models.DateTimeField(blank=True, null=True)
-    
+    notification_preferences = models.JSONField(default=dict, blank=True)
+    account_tier = models.CharField(
+        max_length=10,
+        choices=ACCOUNT_TIER_CHOICES,
+        default="NORMAL",
+        help_text="Forfait citoyen (Normal, Pro, Premium). Réservé aux comptes USER.",
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = "username"
@@ -78,29 +91,69 @@ class User(AbstractUser):
         return self.verification_code
 
     def send_verification_email(self):
-        """Envoie le code de validation par email."""
+        """Envoie le code de validation par e-mail HTML (style portail sécurisé)."""
         code = self.generate_verification_code()
-        subject = "Votre code de vérification"
-        message = f"""
-        Bonjour {self.username},
-        
-        Voici votre code de vérification : {code}
-        Ce code expirera dans 24 heures.
-        
-        L'équipe SSU
-        """
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,  # Assure-toi que ce paramètre est défini dans settings.py
-            [self.email],
-            fail_silently=False,
+        app_name = getattr(settings, "APP_NAME", "SSU Bokengi")
+        frontend_url = (getattr(settings, "FRONTEND_URL", None) or "http://localhost").rstrip("/")
+        verify_url = f"{frontend_url}/verify"
+        expiration_hours = 30
+
+        context = {
+            "username": self.username,
+            "verification_code": code,
+            "verify_url": verify_url,
+            "expiration_hours": expiration_hours,
+            "app_name": app_name,
+            "support_email": getattr(settings, "SUPPORT_EMAIL", None),
+        }
+
+        html_content = render_to_string("emails/verification_email.html", context)
+        plain_message = (
+            f"Bonjour {self.username},\n\n"
+            f"Votre code de vérification {app_name} : {code}\n"
+            f"Ce code expire dans {expiration_hours} heures.\n\n"
+            f"Vérifier votre compte : {verify_url}\n\n"
+            f"L'équipe {app_name}"
         )
+
+        from users.email_utils import send_transactional_email
+
+        send_transactional_email(
+            subject=f"Confirmez votre compte {app_name}",
+            plain_body=plain_message,
+            html_body=html_content,
+            to=[self.email],
+        )
+
+    def merged_notification_preferences(self) -> dict:
+        from .constants import DEFAULT_NOTIFICATION_PREFERENCES
+
+        merged = dict(DEFAULT_NOTIFICATION_PREFERENCES)
+        if isinstance(self.notification_preferences, dict):
+            merged.update(self.notification_preferences)
+        return merged
 
     def __str__(self):
         return self.username
 
 User = get_user_model()
+
+
+class UserSession(models.Model):
+    """Session navigateur liée à un refresh token JWT (jti)."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sessions")
+    jti = models.CharField(max_length=255, unique=True)
+    user_agent = models.CharField(max_length=255, blank=True, default="")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} — {self.jti[:8]}…"
+
 
 class UserActivityLog(models.Model):
     ACTION_CHOICES = [

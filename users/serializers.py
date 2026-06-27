@@ -5,7 +5,7 @@ from .models import TypeUser
 from django.utils import timezone
 from rest_framework_simplejwt.exceptions import TokenError
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 import secrets
 from .models import UserActivityLog
 from django.contrib.auth.password_validation import validate_password
@@ -92,6 +92,9 @@ class RefreshTokenSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     """Sérialiseur pour afficher les infos des utilisateurs"""
     type_user = serializers.CharField(source="type_user.code_typeUser", read_only=True)
+    account_tier_display = serializers.CharField(
+        source="get_account_tier_display", read_only=True
+    )
 
     class Meta:
         model = User
@@ -103,7 +106,9 @@ class UserSerializer(serializers.ModelSerializer):
             "profilePicture_user",
             "is_verified",
             "sexe_user",
-            "type_user", 
+            "type_user",
+            "account_tier",
+            "account_tier_display",
         )
 
 
@@ -211,25 +216,42 @@ class CreatePriviligeSerializer(serializers.ModelSerializer):
         return user
 
     def send_privileged_account_email(self, user, password):
-        """Envoi de l'email HTML avec bouton de connexion"""
+        """Envoi de l'e-mail HTML de bienvenue (style Hostinger)."""
+        from django.conf import settings
 
-        subject = "✅ Votre compte privilégié a été créé"
+        app_name = getattr(settings, "APP_NAME", "SSU Bokengi")
+        frontend_url = (getattr(settings, "FRONTEND_URL", None) or "http://localhost").rstrip("/")
+        login_url = f"{frontend_url}/login"
+        account_type = user.type_user.get_code_typeUser_display() if user.type_user else "Compte"
 
-        login_url = "https://ssu-kinshasa.com/login"  
-
-        html_message = render_to_string("emails/privileged_account_email.html", {
+        context = {
             "user": user,
             "password": password,
             "login_url": login_url,
-        })
+            "app_name": app_name,
+            "account_type": account_type,
+            "support_email": getattr(settings, "SUPPORT_EMAIL", None),
+        }
 
-        send_mail(
-            subject=subject,
-            message="Votre compte a été créé. Veuillez consulter l'e-mail HTML pour les détails.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-            html_message=html_message,
+        html_message = render_to_string("emails/privileged_account_email.html", context)
+        plain_message = (
+            f"Bonjour {user.username},\n\n"
+            f"Votre compte {account_type} sur {app_name} a été créé.\n"
+            f"Identifiant : {user.username}\n"
+            f"E-mail : {user.email}\n"
+            f"Mot de passe temporaire : {password}\n\n"
+            f"Connexion : {login_url}\n\n"
+            f"Changez votre mot de passe après la première connexion.\n"
+            f"L'équipe {app_name}"
+        )
+
+        from users.email_utils import send_transactional_email
+
+        send_transactional_email(
+            subject=f"Votre compte {app_name} a été créé",
+            plain_body=plain_message,
+            html_body=html_message,
+            to=[user.email],
         )
 
 class SuperUserSerializer(serializers.ModelSerializer):
@@ -270,12 +292,72 @@ class VerificationCodeSerializer(serializers.Serializer):
 
         return data
 
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    """Mise à jour complète par un administrateur (inclut le type)."""
+
+    type_user = serializers.SlugRelatedField(
+        slug_field="code_typeUser",
+        queryset=TypeUser.objects.all(),
+        required=False,
+    )
+    account_tier = serializers.ChoiceField(
+        choices=["NORMAL", "PRO", "PREMIUM"],
+        required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "phone_user",
+            "profilePicture_user",
+            "is_verified",
+            "sexe_user",
+            "type_user",
+            "account_tier",
+        )
+        extra_kwargs = {
+            "email": {"required": False},
+            "username": {"required": False},
+        }
+
+    def validate(self, attrs):
+        instance = self.instance
+        type_user = attrs.get("type_user", getattr(instance, "type_user", None))
+        tier = attrs.get("account_tier", getattr(instance, "account_tier", "NORMAL"))
+        role_code = getattr(type_user, "code_typeUser", None)
+        if tier != "NORMAL" and role_code and role_code != "USER":
+            raise serializers.ValidationError(
+                {"account_tier": "Le forfait ne s'applique qu'aux comptes citoyens (USER)."}
+            )
+        return attrs
+
+    def update(self, instance, validated_data):
+        type_user = validated_data.get("type_user", instance.type_user)
+        role_code = getattr(type_user, "code_typeUser", None)
+        if role_code and role_code != "USER":
+            validated_data["account_tier"] = "NORMAL"
+        return super().update(instance, validated_data)
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exclude(pk=self.instance.pk).exists():
+            raise serializers.ValidationError("Cet email est déjà utilisé.")
+        return value
+
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     """
     Sérialiseur dédié aux mises à jour
     (exclut les champs sensibles comme le type_user)
     """
     type_user = serializers.CharField(source="type_user.code_typeUser", read_only=True)
+    account_tier = serializers.CharField(read_only=True)
+    account_tier_display = serializers.CharField(
+        source="get_account_tier_display", read_only=True
+    )
+
     class Meta:
         model = User
         fields = (
@@ -286,7 +368,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "profilePicture_user",
             "is_verified",
             "sexe_user",
-            "type_user", 
+            "type_user",
+            "account_tier",
+            "account_tier_display",
         )
         extra_kwargs = {
             'email': {'required': False},
@@ -325,3 +409,40 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError({"confirm_password": "Les mots de passe ne correspondent pas."})
         return data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True, min_length=8)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, data):
+        if data["new_password"] != data["confirm_password"]:
+            raise serializers.ValidationError(
+                {"confirm_password": "Les mots de passe ne correspondent pas."}
+            )
+        validate_password(data["new_password"])
+        return data
+
+
+class NotificationPreferencesSerializer(serializers.Serializer):
+    email_alerts = serializers.BooleanField(required=False)
+    push_notifications = serializers.BooleanField(required=False)
+    sms_alerts = serializers.BooleanField(required=False)
+    weekly_report = serializers.BooleanField(required=False)
+    nearby_incidents = serializers.BooleanField(required=False)
+
+    def validate(self, attrs):
+        from .constants import NOTIFICATION_PREFERENCE_KEYS
+
+        unknown = set(attrs.keys()) - NOTIFICATION_PREFERENCE_KEYS
+        if unknown:
+            raise serializers.ValidationError(
+                f"Clés inconnues : {', '.join(sorted(unknown))}"
+            )
+        return attrs
+
+    def to_representation(self, instance):
+        if hasattr(instance, "merged_notification_preferences"):
+            return instance.merged_notification_preferences()
+        return instance

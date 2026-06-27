@@ -1,0 +1,15 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color:#0369a1;margin:0 0 12px;">Trajet partagé</h2>
+<p>Bonjour {{ contact_name }},</p>
+<p><strong>{{ initiator_name }}</strong> partage son trajet « Je rentre » sur SSU Bokengi.</p>
+{% if dest_label %}
+<p>Destination : <strong>{{ dest_label }}</strong></p>
+{% endif %}
+<p style="margin:24px 0;">
+  <a href="{{ track_url }}" style="background:#0369a1;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+    Suivre le trajet en direct
+  </a>
+</p>
+<p style="font-size:13px;color:#666;">Si le bouton ne fonctionne pas, copiez ce lien :<br>{{ track_url }}</p>
+{% endblock %}

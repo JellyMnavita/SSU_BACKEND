@@ -20,7 +20,6 @@ def export_reports_to_csv():
     if count == 0:
         return "Aucun signalement validé à exporter."
 
-    # Backup
     if os.path.exists(CSV_PATH):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         shutil.copy2(CSV_PATH, CSV_PATH.replace(".csv", f"_backup_{timestamp}.csv"))
@@ -42,3 +41,29 @@ def export_reports_to_csv():
             ])
 
     return f"{count} signalement(s) exporté(s) vers data_reports.csv"
+
+
+@shared_task(name="prediction.tasks.train_prediction_model")
+def train_prediction_model():
+    """Exporte les signalements validés puis réentraîne via prediction-service."""
+    export_msg = export_reports_to_csv()
+    results = {"export": export_msg}
+
+    try:
+        from prediction.training import train_default_model
+
+        results["train_local"] = train_default_model()
+    except Exception as exc:
+        results["train_local_error"] = str(exc)
+
+    if getattr(settings, "AI_GATEWAY_ENABLED", True):
+        try:
+            from ai_gateway.clients.prediction import PredictionServiceClient
+
+            client = PredictionServiceClient()
+            results["train_microservice"] = client.train()
+            results["reload_microservice"] = client.reload()
+        except Exception as exc:
+            results["train_microservice_error"] = str(exc)
+
+    return results

@@ -39,6 +39,11 @@ INSTALLED_APPS = [
     "reports",
     "locations",
     "scrapping",
+    "prediction",
+    "ai_gateway",
+    "safety",
+    "company",
+    "gov",
     "rest_framework",
     'rest_framework.authtoken',
     "rest_framework_simplejwt",
@@ -89,7 +94,6 @@ WSGI_APPLICATION = "ssu_backend.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -143,14 +147,21 @@ AUTH_USER_MODEL = "users.User"
 
 # Configuration SMTP pour l'envoi d'emails
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-APP_NAME = "SSU"  # Nom à afficher dans les emails
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL")  # Email de support
+EMAIL_SUBJECT_PREFIX = ""
+_server_user = (EMAIL_HOST_USER or "").strip()
+_app_name = os.getenv("APP_NAME", "SSU Bokengi")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    f"{_app_name} <{_server_user}>" if _server_user else _app_name,
+)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+APP_NAME = _app_name
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL") or _server_user
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -219,7 +230,13 @@ if DEBUG:
         if origin not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Configuration Redis - utilise le nom du service Docker ou localhost en développement
+# Derrière Cloudflare Tunnel / reverse proxy HTTPS
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
 REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
@@ -236,6 +253,26 @@ CACHES = {
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
 
+# --- Microservices IA (ai_gateway) ---
+from ai_gateway.conf import (  # noqa: E402
+    AI_GATEWAY_ENABLED,
+    AI_HTTP_RETRIES,
+    AI_HTTP_RETRY_BACKOFF,
+    AI_HTTP_TIMEOUT,
+    AI_USE_MICROSERVICES,
+    NLP_SERVICE_URL,
+    PREDICTION_GRID_TIMEOUT,
+    PREDICTION_SERVICE_URL,
+    PREDICTION_TRAIN_TIMEOUT,
+    SCRAPING_HTTP_TIMEOUT,
+    SCRAPING_SERVICE_URL,
+    VISION_HTTP_TIMEOUT,
+    VISION_SERVICE_URL,
+)
+
+# Ingestion automatique actualités → signalements source=S
+NEWS_INGEST_ENABLED = os.getenv("NEWS_INGEST_ENABLED", "1") == "1"
+
 # Celery est optionnel selon l'environnement (dev local / prod).
 try:
     from celery.schedules import crontab
@@ -245,9 +282,25 @@ try:
             "task": "scrapping.tasks.refresh_scrapping_cache",
             "schedule": crontab(minute="*/30"),
         },
-        "export_reports_csv_every_night": {
+        "ingest_security_news_hourly": {
+            "task": "scrapping.tasks.ingest_security_news",
+            "schedule": crontab(minute="15"),  # chaque heure à :15
+        },
+        "export_reports_csv_hourly": {
             "task": "prediction.tasks.export_reports_to_csv",
-            "schedule": crontab(hour="2", minute="0"),  # Tous les jours à 2h du matin
+            "schedule": crontab(minute="5"),  # chaque heure à :05
+        },
+        "train_prediction_model_hourly": {
+            "task": "prediction.tasks.train_prediction_model",
+            "schedule": crontab(minute="10"),  # chaque heure à :10
+        },
+        "train_vision_model_weekly": {
+            "task": "reports.tasks.train_vision_model_weekly",
+            "schedule": crontab(hour=3, minute=0, day_of_week="sun"),
+        },
+        "send_weekly_security_reports": {
+            "task": "company.tasks.send_weekly_security_reports",
+            "schedule": crontab(hour=7, minute=0, day_of_week="mon"),
         },
     }
 

@@ -13,6 +13,10 @@ from .views import (
     ExportUserActivityView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    PasswordChangeView,
+    UserNotificationPreferencesView,
+    UserSessionsView,
+    UserSessionRevokeView,
 )
 
 urlpatterns = [
@@ -38,4 +42,12 @@ urlpatterns = [
     ),
     path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path("user/password/change/", PasswordChangeView.as_view(), name="password-change"),
+    path("user/preferences/", UserNotificationPreferencesView.as_view(), name="user-preferences"),
+    path("user/sessions/", UserSessionsView.as_view(), name="user-sessions"),
+    path(
+        "user/sessions/<str:jti>/revoke/",
+        UserSessionRevokeView.as_view(),
+        name="user-session-revoke",
+    ),
 ]

@@ -90,14 +90,12 @@ Toutes les commandes Django doivent être exécutées dans le conteneur `web` :
 docker-compose exec web python manage.py createsuperuser
 ```
 
-**Créer des migrations :**
+**Migrations :** voir le guide complet **[MIGRATIONS.md](./MIGRATIONS.md)** (Docker, local, anti-enlèvement `reports` 0009 + `safety`).
+
 ```bash
 docker-compose exec web python manage.py makemigrations
-```
-
-**Appliquer les migrations :**
-```bash
 docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py showmigrations reports safety
 ```
 
 **Collecter les fichiers statiques :**

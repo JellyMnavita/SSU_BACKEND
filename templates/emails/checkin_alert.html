@@ -1,0 +1,15 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="color:#0369a1;margin:0 0 12px;">Check-in sécurité</h2>
+<p>Bonjour {{ contact_name }},</p>
+<p><strong>{{ initiator_name }}</strong> a démarré un check-in sécurité sur SSU Bokengi.</p>
+{% if duration_minutes %}
+<p>Durée : <strong>{{ duration_minutes }} minutes</strong> — une confirmation est attendue avant la fin du délai.</p>
+{% endif %}
+<p style="margin:24px 0;">
+  <a href="{{ track_url }}" style="background:#0369a1;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+    Suivre la position en direct
+  </a>
+</p>
+<p style="font-size:13px;color:#666;">Si le bouton ne fonctionne pas, copiez ce lien :<br>{{ track_url }}</p>
+{% endblock %}

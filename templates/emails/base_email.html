@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f5ff;font-family:Arial,Helvetica,sans-serif;color:#1a1a2e;line-height:1.6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f5ff;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(26,26,46,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="padding:28px 32px 20px;border-bottom:1px solid #eef0f8;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="font-size:22px;font-weight:700;color:#0d9db8;letter-spacing:-0.3px;">
+                    SSU <span style="color:#1a1a2e;">Bokengi</span>
+                  </td>
+                  <td align="right" style="font-size:12px;font-weight:600;color:#673de6;letter-spacing:0.5px;text-transform:uppercase;">
+                    Sécurité urbaine
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 32px;background:#fafbff;border-top:1px solid #eef0f8;text-align:center;">
+              <p style="margin:0 0 8px;font-size:12px;color:#8b8fa8;">
+                SSU Bokengi — Sécurité urbaine, Kinshasa (RDC)
+              </p>
+              <p style="margin:0 0 8px;font-size:12px;color:#8b8fa8;">
+                Ne répondez pas à cet e-mail automatique. Utilisez l'adresse de support ci-dessous.
+              </p>
+              <p style="margin:0 0 8px;font-size:12px;color:#8b8fa8;">
+                © {% now "Y" %} {{ app_name }}. Tous droits réservés.
+              </p>
+              {% if support_email %}
+              <p style="margin:0;font-size:12px;">
+                <a href="mailto:{{ support_email }}" style="color:#673de6;text-decoration:none;">{{ support_email }}</a>
+              </p>
+              {% endif %}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

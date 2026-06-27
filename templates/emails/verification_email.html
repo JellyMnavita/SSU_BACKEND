@@ -1,0 +1,51 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Vérification de votre compte — {{ app_name }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 8px;font-size:15px;color:#4a4e69;">Bonjour <strong>{{ username }}</strong>,</p>
+
+<h1 style="margin:16px 0 12px;font-size:26px;font-weight:700;color:#1a1a2e;line-height:1.3;">
+  Confirmez votre compte {{ app_name }}
+</h1>
+
+<p style="margin:0 0 24px;font-size:15px;color:#4a4e69;">
+  Merci pour votre inscription. Utilisez le code ci-dessous sur le portail de vérification
+  pour activer votre compte et accéder à la plateforme de sécurité urbaine à Kinshasa.
+</p>
+
+<!-- Code box (style AWS) -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 24px;">
+  <tr>
+    <td style="background:#eef6ff;border:1px solid #c5d9f5;border-radius:8px;padding:24px;text-align:center;">
+      <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#1a1a2e;">Code de vérification :</p>
+      <p style="margin:0;font-size:36px;font-weight:700;letter-spacing:8px;color:#1a1a2e;font-family:'Courier New',monospace;">
+        {{ verification_code }}
+      </p>
+      <p style="margin:12px 0 0;font-size:13px;color:#6b7280;">
+        (Ce code expirera dans {{ expiration_hours }} heures)
+      </p>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:#6b7280;">
+  Copiez ce lien dans votre navigateur pour vérifier votre compte :<br />
+  <a href="{{ verify_url }}" style="color:#673de6;word-break:break-all;">{{ verify_url }}</a>
+</p>
+
+<!-- Security notice (style AWS) -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:28px;">
+  <tr>
+    <td style="background:#f5f5f7;border-radius:8px;padding:16px 20px;">
+      <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.5;">
+        <strong style="color:#4a4e69;">Sécurité :</strong>
+        {{ app_name }} ne vous demandera jamais votre mot de passe, vos coordonnées bancaires
+        ou ce code de vérification par e-mail ou téléphone. Si vous recevez un message suspect,
+        ne cliquez sur aucun lien et contactez
+        {% if support_email %}<a href="mailto:{{ support_email }}" style="color:#673de6;">{{ support_email }}</a>{% else %}notre support{% endif %}.
+      </p>
+    </td>
+  </tr>
+</table>
+{% endblock %}

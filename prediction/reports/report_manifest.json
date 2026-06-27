@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-06-26T22:36:13.426934",
+  "algorithm": "GradientBoosting",
+  "gold_f1_macro": 0.38468428123600534,
+  "test_f1_macro": 0.14814814814814814,
+  "samples": {
+    "train": 191,
+    "val": 40,
+    "test": 33,
+    "gold": 47,
+    "fit_total": 231
+  },
+  "plots": {
+    "class_balance": "/workspace/ssu_backend/prediction/reports/eda_class_balance.png",
+    "hour_distribution": "/workspace/ssu_backend/prediction/reports/eda_hour_distribution.png",
+    "weekday_distribution": "/workspace/ssu_backend/prediction/reports/eda_weekday_distribution.png",
+    "top_locations": "/workspace/ssu_backend/prediction/reports/eda_top_locations.png",
+    "top_descriptions": "/workspace/ssu_backend/prediction/reports/eda_top_descriptions.png",
+    "spatial_scatter": "/workspace/ssu_backend/prediction/reports/eda_spatial_scatter.png",
+    "model_comparison": "/workspace/ssu_backend/prediction/reports/eda_model_comparison.png"
+  }
+}

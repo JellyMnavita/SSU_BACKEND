@@ -1,0 +1,47 @@
+{
+  "total_clean": 311,
+  "cleaning": {
+    "rows_read": 312,
+    "rows_kept": 311,
+    "removed_invalid_coords": 0,
+    "removed_out_of_bbox": 0,
+    "removed_invalid_degree": 1,
+    "removed_duplicates": 0,
+    "filled_created_at": 0,
+    "normalized_degree": 0
+  },
+  "splits": {
+    "gold": 47,
+    "train": 191,
+    "val": 40,
+    "test": 33
+  },
+  "class_distribution": {
+    "full": {
+      "faible": 150,
+      "modere": 84,
+      "eleve": 77
+    },
+    "train": {
+      "faible": 93,
+      "modere": 51,
+      "eleve": 47
+    },
+    "val": {
+      "faible": 19,
+      "modere": 11,
+      "eleve": 10
+    },
+    "test": {
+      "faible": 16,
+      "modere": 9,
+      "eleve": 8
+    },
+    "gold": {
+      "faible": 22,
+      "modere": 13,
+      "eleve": 12
+    }
+  },
+  "seed": 42
+}

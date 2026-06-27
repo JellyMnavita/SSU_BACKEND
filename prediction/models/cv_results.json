@@ -1,0 +1,48 @@
+{
+  "comparison": {
+    "GradientBoosting": {
+      "accuracy_mean": 0.4817813765182186,
+      "accuracy_std": 0.049568281580447515,
+      "f1_macro_mean": 0.43785720732711597,
+      "f1_macro_std": 0.04912697691041677,
+      "f1_weighted_mean": 0.47269166450203504,
+      "f1_weighted_std": 0.04937422424159261,
+      "folds": 5
+    },
+    "HistGradientBoosting": {
+      "accuracy_mean": 0.4873144399460189,
+      "accuracy_std": 0.05701239306282878,
+      "f1_macro_mean": 0.4277333713108694,
+      "f1_macro_std": 0.06527295220106621,
+      "f1_weighted_mean": 0.46777183295207037,
+      "f1_weighted_std": 0.06188775584252318,
+      "folds": 5
+    },
+    "RandomForest": {
+      "accuracy_mean": 0.4979757085020243,
+      "accuracy_std": 0.07734806953256194,
+      "f1_macro_mean": 0.43265153690925795,
+      "f1_macro_std": 0.08531081399293335,
+      "f1_weighted_mean": 0.47610460738706245,
+      "f1_weighted_std": 0.07792520801157322,
+      "folds": 5
+    },
+    "LogisticRegression": {
+      "accuracy_mean": 0.36707152496626183,
+      "accuracy_std": 0.05777964520361297,
+      "f1_macro_mean": 0.3696848968020988,
+      "f1_macro_std": 0.05947325107650076,
+      "f1_weighted_mean": 0.3600244458396542,
+      "f1_weighted_std": 0.050639527211380674,
+      "folds": 5
+    }
+  },
+  "ranking": [
+    "GradientBoosting",
+    "RandomForest",
+    "HistGradientBoosting",
+    "LogisticRegression"
+  ],
+  "selected_model": "GradientBoosting",
+  "selection_reason": "Meilleur F1 macro en validation croisée (5-fold) sur le jeu train : GradientBoosting (F1=0.438 ± 0.049)"
+}

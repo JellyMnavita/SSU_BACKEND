@@ -22,7 +22,9 @@ from django.conf import settings
 from reports.tasks import process_report_ai
 
 from .notifications import notify_report_status_change, update_report_status
+from .public_visibility import apply_public_map_retention, get_public_map_retention_days
 from .moderation_feedback import record_human_moderation_feedback
+from .cache_utils import invalidate_reports_list_cache
 from .serializers import (
     AdminReportEditSerializer,
     ReportDetailsSerializer,
@@ -94,12 +96,20 @@ class ReportCreateView(generics.CreateAPIView):
 def _apply_report_filters(qs, request):
     """Filtres partagés entre la liste paginée et l'export CSV admin."""
     status_param = request.query_params.get("status")
-    if status_param in ("P", "V", "R"):
-        qs = qs.filter(status=status_param)
+    if status_param:
+        statuses = [s.strip() for s in status_param.split(",") if s.strip() in ("P", "V", "R")]
+        if len(statuses) == 1:
+            qs = qs.filter(status=statuses[0])
+        elif len(statuses) > 1:
+            qs = qs.filter(status__in=statuses)
 
     degree_param = request.query_params.get("degree")
-    if degree_param in ("F", "M", "E"):
-        qs = qs.filter(degree=degree_param)
+    if degree_param:
+        degrees = [d.strip() for d in degree_param.split(",") if d.strip() in ("F", "M", "E")]
+        if len(degrees) == 1:
+            qs = qs.filter(degree=degrees[0])
+        elif len(degrees) > 1:
+            qs = qs.filter(degree__in=degrees)
 
     quartier_param = request.query_params.get("quartier")
     if quartier_param:
@@ -123,8 +133,13 @@ def _apply_report_filters(qs, request):
         qs = qs.filter(search_q)
 
     source_param = (request.query_params.get("source") or "").strip().upper()
-    if source_param in ("U", "C", "S", "A", "O", "Q", "W"):
-        qs = qs.filter(source=source_param)
+    if source_param:
+        allowed_sources = ("U", "C", "S", "A", "O", "Q", "W")
+        sources = [s.strip() for s in source_param.split(",") if s.strip() in allowed_sources]
+        if len(sources) == 1:
+            qs = qs.filter(source=sources[0])
+        elif len(sources) > 1:
+            qs = qs.filter(source__in=sources)
 
     ai_status = (request.query_params.get("ai_processing_status") or "").strip().lower()
     if ai_status in ("pending", "processing", "completed", "failed", "skipped"):
@@ -155,7 +170,7 @@ class ReportListView(generics.ListAPIView):
     class ReportPagination(PageNumberPagination):
         page_size = 20
         page_size_query_param = "page_size"
-        max_page_size = 100
+        max_page_size = 500
 
     pagination_class = ReportPagination
 
@@ -163,7 +178,7 @@ class ReportListView(generics.ListAPIView):
         user = self.request.user
         base = Report.objects.select_related("user", "citizen", "quartier", "quartier__commune")
 
-        if user.is_authenticated and user.type_user.code_typeUser == "ADMIN":
+        if user.is_authenticated and user.type_user.code_typeUser in ("ADMIN", "GOV"):
             qs = base.all()
         else:
             qs = (
@@ -171,6 +186,7 @@ class ReportListView(generics.ListAPIView):
                 .exclude(external_source_url__startswith=SYNTHETIC_URL_PREFIX)
                 .exclude(source="O")
             )
+            qs = apply_public_map_retention(qs)
 
         return _apply_report_filters(qs, self.request).order_by("-created_at")
 
@@ -178,11 +194,15 @@ class ReportListView(generics.ListAPIView):
         user = request.user
         visibility_scope = (
             "admin_all"
-            if user.is_authenticated and getattr(user.type_user, "code_typeUser", None) == "ADMIN"
+            if user.is_authenticated
+            and getattr(user.type_user, "code_typeUser", None) in ("ADMIN", "GOV")
             else "public_validated"
         )
         cache_key_payload = {
             "scope": visibility_scope,
+            "retention_days": (
+                get_public_map_retention_days() if visibility_scope == "public_validated" else None
+            ),
             "params": {
                 "status": request.query_params.get("status"),
                 "degree": request.query_params.get("degree"),
@@ -227,6 +247,7 @@ class ReportUpdateView(generics.UpdateAPIView):
         report = serializer.save()
         if old_status != report.status:
             record_human_moderation_feedback(report, report.status, self.request.user)
+            notify_report_status_change(report, old_status)
         invalidate_reports_list_cache()
 
 
@@ -535,6 +556,7 @@ class ExportReportsView(APIView):
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         filename = f"signalements_{timezone.localdate().isoformat()}.csv"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response.write("\ufeff")
 
         writer = csv.writer(response)
         writer.writerow([

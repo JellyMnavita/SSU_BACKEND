@@ -10,8 +10,8 @@ class RoleBasedAccess(BasePermission):
     - CITIZEN: Accès seulement aux URLs /citizen/
     """
     role_paths = {
-        'ADMIN': ['/admin/', '/gov/', '/company/', '/user/', '/citizen/'],
-        'GOV': ['/gov/'],
+        'ADMIN': ['/admin/', '/gov/', '/company/', '/police/', '/user/', '/citizen/'],
+        'GOV': ['/gov/', '/police/'],
         'COMPANY': ['/company/'],
         'USER': ['/user/'],
         'CITIZEN': ['/citizen/']
@@ -27,11 +27,12 @@ class IsAdminUserType(BasePermission):
     Permission personnalisée qui vérifie que l'utilisateur est de type ADMIN
     """
     def has_permission(self, request, view):
-        
-        return (
-            request.user.is_authenticated and 
-            request.user.type_user.code_typeUser == 'ADMIN'
-        )
+        if not request.user.is_authenticated:
+            return False
+        type_user = getattr(request.user, "type_user", None)
+        if type_user is None:
+            return False
+        return getattr(type_user, "code_typeUser", None) == "ADMIN"
         
 class IsOwnerOrAdmin(BasePermission):
     """

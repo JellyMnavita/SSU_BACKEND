@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from .serializers import (
@@ -225,9 +226,17 @@ class UserListView(generics.ListAPIView):
     Accessible uniquement aux administrateurs
     """
 
-    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUserType]
+
+    def get_queryset(self):
+        # Comptes actifs uniquement ; exclut les anciennes suppressions logiques (deleted_*).
+        return (
+            User.objects.filter(is_active=True)
+            .exclude(username__startswith="deleted_")
+            .exclude(email__startswith="deleted+")
+            .select_related("type_user")
+        )
 
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -253,34 +262,73 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
+    def _anonymize_user_account(self, user):
+        """Suppression logique (profil /me/) : anonymise et désactive."""
+        user.is_active = False
+        user.is_verified = False
+        user.email = f"deleted+{user.id}@example.invalid"
+        user.username = f"deleted_{user.id}"
+        user.phone_user = ""
+        user.sexe_user = ""
+        user.agreementTermsUse_user = False
+        try:
+            user.profilePicture_user = None
+        except Exception:
+            pass
+        user.save()
+        OutstandingToken.objects.filter(user=user).delete()
+
+    def _hard_delete_user_account(self, user):
+        """Suppression définitive par l'admin : retire la ligne utilisateur."""
+        OutstandingToken.objects.filter(user=user).delete()
+        user.delete()
+
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         mode = (request.query_params.get("mode") or "").strip().lower()
-        if mode == "delete":
-            # Suppression "logique" : anonymise les données et désactive le compte
-            # (évite de casser des FK vers reports, sessions, etc.).
-            user.is_active = False
-            user.is_verified = False
-            user.email = f"deleted+{user.id}@example.invalid"
-            user.username = f"deleted_{user.id}"
-            user.phone_user = ""
-            user.sexe_user = ""
-            user.agreementTermsUse_user = False
+        is_admin_route = "/admin/users/" in request.path
+        requester_is_admin = (
+            request.user.is_authenticated
+            and getattr(getattr(request.user, "type_user", None), "code_typeUser", None)
+            == "ADMIN"
+        )
+
+        # Suppression admin : effacement définitif de la base (disparaît de la liste).
+        if is_admin_route and requester_is_admin:
+            if user.id == request.user.id:
+                return Response(
+                    {
+                        "error": "Vous ne pouvez pas supprimer votre propre compte depuis cette interface."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             try:
-                user.profilePicture_user = None
-            except Exception:
-                pass
-            user.save()
+                self._hard_delete_user_account(user)
+            except IntegrityError:
+                return Response(
+                    {
+                        "error": "Suppression impossible : cet utilisateur est encore référencé par d'autres données."
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+            return Response(
+                {"message": "Utilisateur supprimé définitivement."},
+                status=status.HTTP_200_OK,
+            )
+
+        if mode == "delete":
+            self._anonymize_user_account(user)
             return Response(
                 {"message": "Compte supprimé (anonymisé) avec succès."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         user.is_active = False
         user.save()
+        OutstandingToken.objects.filter(user=user).delete()
         return Response(
             {"message": "Compte désactivé avec succès."},
-            status=status.HTTP_204_NO_CONTENT,
+            status=status.HTTP_200_OK,
         )
 
 class AdminUserManagementView(generics.RetrieveUpdateDestroyAPIView):

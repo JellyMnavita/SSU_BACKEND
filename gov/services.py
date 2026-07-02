@@ -11,6 +11,7 @@ from company.services import (
     _commune_stats,
     _risk_label,
 )
+from police.services import build_police_dashboard
 from reports.models import Report
 
 
@@ -94,6 +95,8 @@ def build_gov_dashboard(user) -> dict:
         "faible": kinshasa_recent.filter(degree="F").count(),
     }
 
+    police = build_police_dashboard(user)
+
     return {
         "entity_name": user.username,
         "global_risk_label": global_label,
@@ -110,6 +113,11 @@ def build_gov_dashboard(user) -> dict:
         "top_communes": top_communes[:12],
         "priority_communes": priority_communes,
         "recent_pending_reports": recent_pending[:8],
+        "posts_count": police["posts_count"],
+        "active_posts_count": police["active_posts_count"],
+        "pending_near_posts": police["pending_near_posts"],
+        "validated_near_posts": police["validated_near_posts"],
+        "recent_pending_near_posts": police["recent_pending_near_posts"],
         "security_brief": _build_gov_brief(
             global_label=global_label,
             top_communes=top_communes,

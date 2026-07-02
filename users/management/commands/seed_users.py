@@ -36,6 +36,16 @@ _USERS = [
         "is_staff": False,
     },
     {
+        "type_code": "GOV",
+        "username": "police_ssu",
+        "email": "police@ssu.cd",
+        "password": "Police@ssu2025",
+        "phone_user": "+243810000005",
+        "sexe_user": "M",
+        "is_verified": True,
+        "is_staff": False,
+    },
+    {
         "type_code": "USER",
         "username": "user_ssu",
         "email": "utilisateur@ssu.cd",

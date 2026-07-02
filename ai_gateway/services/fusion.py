@@ -48,6 +48,8 @@ def _nlp_risk(nlp: dict | None, description: str = "") -> tuple[float, str]:
         return 0.0, ""
     if nlp.get("model_used") == "institutional_filter":
         return 0.05, "NLP : actualité institutionnelle / hors incident local"
+    if nlp.get("model_used") == "scraped_news_filter":
+        return 0.06, "NLP : actualité scrapée sans incident urbain local signalé"
     if nlp.get("model_used") == "benign_filter":
         return 0.05, "NLP : contenu anodin détecté"
 

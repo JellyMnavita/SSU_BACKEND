@@ -36,6 +36,7 @@ class TrackingSessionSerializer(serializers.ModelSerializer):
     points = TrackingPointSerializer(many=True, read_only=True)
     maps_link = serializers.SerializerMethodField()
     initiator_name = serializers.SerializerMethodField()
+    initiator_sex = serializers.SerializerMethodField()
 
     class Meta:
         model = TrackingSession
@@ -56,6 +57,7 @@ class TrackingSessionSerializer(serializers.ModelSerializer):
             "points",
             "maps_link",
             "initiator_name",
+            "initiator_sex",
         ]
         read_only_fields = [
             "id",
@@ -64,6 +66,7 @@ class TrackingSessionSerializer(serializers.ModelSerializer):
             "points",
             "maps_link",
             "initiator_name",
+            "initiator_sex",
         ]
 
     def get_initiator_name(self, obj):
@@ -71,6 +74,13 @@ class TrackingSessionSerializer(serializers.ModelSerializer):
         if not user:
             return None
         return user.username or user.email or "Citoyen"
+
+    def get_initiator_sex(self, obj):
+        user = getattr(obj, "user", None)
+        if not user:
+            return None
+        sex = (getattr(user, "sexe_user", None) or "").strip().upper()
+        return "F" if sex == "F" else "M"
 
     def get_maps_link(self, obj):
         if obj.last_latitude is None or obj.last_longitude is None:

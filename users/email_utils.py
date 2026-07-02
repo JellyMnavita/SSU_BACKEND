@@ -57,8 +57,8 @@ def send_transactional_email(
         "X-Auto-Response-Suppress": "All",
         "X-Entity-Ref-ID": str(uuid.uuid4()),
     }
+    # Un seul mécanisme : message.reply_to (évite un double en-tête Reply-To rejeté par Gmail).
     if reply:
         message.reply_to = [reply]
-        headers["Reply-To"] = reply
     message.extra_headers = headers
     message.send(fail_silently=False)

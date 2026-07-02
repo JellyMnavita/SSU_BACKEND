@@ -35,12 +35,22 @@
       "f1_weighted_mean": 0.3600244458396542,
       "f1_weighted_std": 0.050639527211380674,
       "folds": 5
+    },
+    "SVM": {
+      "accuracy_mean": 0.3929824561403509,
+      "accuracy_std": 0.056956782739466416,
+      "f1_macro_mean": 0.3867982750216633,
+      "f1_macro_std": 0.06069409769848241,
+      "f1_weighted_mean": 0.3931792167057783,
+      "f1_weighted_std": 0.0652568912094297,
+      "folds": 5
     }
   },
   "ranking": [
     "GradientBoosting",
     "RandomForest",
     "HistGradientBoosting",
+    "SVM",
     "LogisticRegression"
   ],
   "selected_model": "GradientBoosting",

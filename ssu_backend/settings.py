@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "safety",
     "company",
     "gov",
+    "police",
     "rest_framework",
     'rest_framework.authtoken',
     "rest_framework_simplejwt",

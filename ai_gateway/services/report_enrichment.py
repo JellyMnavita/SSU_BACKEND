@@ -10,7 +10,7 @@ from django.core.files.storage import default_storage
 
 from ai_gateway.clients import NLPServiceClient, VisionServiceClient
 from ai_gateway.clients.base import AIServiceError
-from .content_filters import looks_non_security_news
+from .content_filters import has_local_incident_markers, looks_non_security_news
 from .degree_adjustment import apply_degree_adjustment
 
 logger = logging.getLogger(__name__)
@@ -41,6 +41,16 @@ def enrich_report_with_ai(report) -> dict:
                     "incident_type": "autre",
                     "confidence": 0.88,
                     "model_used": "institutional_filter",
+                    "original_nlp": result["nlp"],
+                }
+            elif getattr(report, "source", None) == "S" and not has_local_incident_markers(
+                report.description
+            ):
+                # Actualité scrapée sans incident local signalé — ne pas sur-noter « violence ».
+                result["nlp"] = {
+                    "incident_type": "autre",
+                    "confidence": 0.9,
+                    "model_used": "scraped_news_filter",
                     "original_nlp": result["nlp"],
                 }
         except AIServiceError as exc:

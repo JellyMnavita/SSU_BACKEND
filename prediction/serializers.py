@@ -14,6 +14,10 @@ class RouteCoordinateSerializer(serializers.Serializer):
 
 class RouteCandidateSerializer(serializers.Serializer):
     id = serializers.CharField(required=False, allow_blank=False)
+    travel_mode = serializers.ChoiceField(
+        choices=["walking", "driving", "cycling"],
+        required=False,
+    )
     distance_m = serializers.FloatField(min_value=0)
     duration_s = serializers.FloatField(min_value=0)
     geometry = serializers.ListField(

@@ -138,13 +138,18 @@ class EmergencyAlertView(APIView):
             )
 
         contact_ids = data.get("contact_ids") or []
-        if data["kind"] == "sos" and contact_ids:
-            valid_ids = set(
-                TrustedContact.objects.filter(
-                    user=user, id__in=contact_ids
-                ).values_list("id", flat=True)
-            )
-            contact_ids = [cid for cid in contact_ids if cid in valid_ids]
+        if data["kind"] == "sos":
+            if contact_ids:
+                valid_ids = set(
+                    TrustedContact.objects.filter(
+                        user=user, id__in=contact_ids
+                    ).values_list("id", flat=True)
+                )
+                contact_ids = [cid for cid in contact_ids if cid in valid_ids]
+            else:
+                contact_ids = list(
+                    TrustedContact.objects.filter(user=user).values_list("id", flat=True)
+                )
 
         report = _create_emergency_report(
             user,

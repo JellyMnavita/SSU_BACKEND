@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import logging
 
-from django.db.models import Q
-
 logger = logging.getLogger(__name__)
 
 STATUS_MESSAGES = {
@@ -39,7 +37,11 @@ def notify_report_status_change(report, previous_status: str) -> int:
     Crée une notification in-app pour le(s) auteur(s) lorsque le statut passe à V ou R.
     Retourne le nombre de notifications créées.
     """
-    from .models import ReportNotification
+    try:
+        from .models import ReportNotification
+    except Exception:
+        logger.exception("Impossible de charger ReportNotification")
+        return 0
 
     if report.status == previous_status:
         return 0
@@ -55,21 +57,29 @@ def notify_report_status_change(report, previous_status: str) -> int:
     message = message_tpl.format(report_id=report.pk)
     created = 0
 
-    for recipient in _report_recipients(report):
-        _, was_created = ReportNotification.objects.get_or_create(
-            recipient=recipient,
-            report=report,
-            status=report.status,
-            defaults={"message": message},
-        )
-        if was_created:
-            created += 1
-            logger.info(
-                "Notification signalement %s → user %s (%s)",
-                report.pk,
-                recipient.pk,
-                report.status,
+    try:
+        for recipient in _report_recipients(report):
+            _, was_created = ReportNotification.objects.get_or_create(
+                recipient=recipient,
+                report=report,
+                status=report.status,
+                defaults={"message": message},
             )
+            if was_created:
+                created += 1
+                logger.info(
+                    "Notification signalement %s → user %s (%s)",
+                    report.pk,
+                    recipient.pk,
+                    report.status,
+                )
+    except Exception:
+        logger.exception(
+            "Échec création notification pour signalement %s (statut %s)",
+            report.pk,
+            report.status,
+        )
+        return 0
 
     return created
 

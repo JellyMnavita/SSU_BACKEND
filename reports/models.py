@@ -197,6 +197,10 @@ class ReportAISettings(models.Model):
         default=0,
         help_text="Réentraîner automatiquement après N exports/corrections (0 = désactivé).",
     )
+    public_map_retention_days = models.PositiveIntegerField(
+        default=30,
+        help_text="Jours d'affichage des signalements validés sur la carte publique (0 = illimité).",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

@@ -14,6 +14,7 @@ class ReportAISettingsSerializer(serializers.ModelSerializer):
             "auto_ingest_news",
             "auto_vision_retrain_weekly",
             "vision_retrain_after_exports",
+            "public_map_retention_days",
             "updated_at",
         ]
         read_only_fields = ["updated_at"]
@@ -29,3 +30,8 @@ class ReportAISettingsSerializer(serializers.ModelSerializer):
         if value is None:
             return 0
         return max(0, int(value))
+
+    def validate_public_map_retention_days(self, value):
+        if value is None:
+            return 30
+        return max(0, min(int(value), 365))

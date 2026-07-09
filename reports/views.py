@@ -371,6 +371,16 @@ def _activity_last_7_days():
     return activity
 
 
+class PlatformThemeView(APIView):
+    """Thème couleur plateforme (public, sans auth)."""
+
+    permission_classes = []
+
+    def get(self, request):
+        settings_obj = ReportAISettings.get_solo()
+        return Response({"accent_theme": settings_obj.accent_theme})
+
+
 class ReportAISettingsView(APIView):
     """Paramètres IA signalements (admin) — ex. modération automatique."""
 

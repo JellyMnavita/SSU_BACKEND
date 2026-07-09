@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from reports.models import Report
+from reports.report_quality import is_synthetic_training_report
 
 CSV_PATH = os.path.join(settings.BASE_DIR, "prediction", "data", "data_reports.csv")
 
@@ -49,6 +50,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("Aucun signalement à exporter."))
             return
 
+        real_count = 0
+        synthetic_count = 0
+
         with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([
@@ -58,6 +62,7 @@ class Command(BaseCommand):
                 "degree_report",
                 "description_report",
                 "created_at",
+                "source_report",
             ])
 
             for report in qs.iterator():
@@ -65,6 +70,11 @@ class Command(BaseCommand):
                 location = (report.location or "Kinshasa").strip()
                 description = (report.description or "").replace("\n", " ").strip()
                 created_at = report.created_at.strftime("%Y-%m-%d %H:%M:%S") if report.created_at else ""
+                source_report = "synthetic" if is_synthetic_training_report(report) else "real"
+                if source_report == "synthetic":
+                    synthetic_count += 1
+                else:
+                    real_count += 1
 
                 writer.writerow([
                     report.latitude,
@@ -73,10 +83,12 @@ class Command(BaseCommand):
                     degree,
                     description,
                     created_at,
+                    source_report,
                 ])
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Export terminé : {count} signalement(s) exporté(s) vers {CSV_PATH}"
+                f"Export terminé : {count} signalement(s) exporté(s) vers {CSV_PATH} "
+                f"({real_count} réel(s), {synthetic_count} synthétique(s))."
             )
         )

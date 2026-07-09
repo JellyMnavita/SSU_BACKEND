@@ -12,6 +12,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core import exceptions
 from django.template.loader import render_to_string
+from common.i18n import validation_error
 
 User = get_user_model()
 
@@ -55,14 +56,10 @@ class LoginSerializer(serializers.Serializer):
                 pass
 
         if user is None:
-            raise serializers.ValidationError(
-                "Identifiants invalides. Veuillez réessayer."
-            )
+            raise validation_error("ERR_INVALID_CREDENTIALS", self.context)
 
         if not user.is_verified:
-            raise serializers.ValidationError(
-                "Votre compte n'est pas encore vérifié. Veuillez vérifier votre email."
-            )
+            raise validation_error("ERR_ACCOUNT_NOT_VERIFIED", self.context)
 
         data["user"] = user
         return data
@@ -144,11 +141,11 @@ class InscriptionSerializer(serializers.ModelSerializer):
         
         # Vous pouvez ajouter des validations supplémentaires ici si nécessaire
         if value.lower() == value:
-            raise serializers.ValidationError("Le mot de passe doit contenir au moins une majuscule.")
+            raise validation_error("ERR_PASSWORD_UPPERCASE", self.context)
         if value.isalnum():
-            raise serializers.ValidationError("Le mot de passe doit contenir au moins un caractère spécial.")
+            raise validation_error("ERR_PASSWORD_SPECIAL", self.context)
         if self.initial_data.get('username').lower() in value.lower():
-            raise serializers.ValidationError("Le mot de passe ne doit pas contenir votre nom d'utilisateur.")
+            raise validation_error("ERR_PASSWORD_CONTAINS_USERNAME", self.context)
         
         return value
 
@@ -277,18 +274,16 @@ class VerificationCodeSerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError(
-                "Aucun utilisateur avec cet email n'a été trouvé."
-            )
+            raise validation_error("ERR_USER_NOT_FOUND_EMAIL", self.context)
 
         if user.is_verified:
-            raise serializers.ValidationError("Ce compte a déjà été vérifié.")
+            raise validation_error("ERR_ALREADY_VERIFIED", self.context)
 
         if user.verification_code != code:
-            raise serializers.ValidationError("Code de vérification incorrect.")
+            raise validation_error("ERR_INVALID_VERIFICATION_CODE", self.context)
 
         if user.code_expiration and user.code_expiration < timezone.now():
-            raise serializers.ValidationError("Le code de vérification a expiré.")
+            raise validation_error("ERR_VERIFICATION_CODE_EXPIRED", self.context)
 
         return data
 
@@ -329,9 +324,7 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         tier = attrs.get("account_tier", getattr(instance, "account_tier", "NORMAL"))
         role_code = getattr(type_user, "code_typeUser", None)
         if tier != "NORMAL" and role_code and role_code != "USER":
-            raise serializers.ValidationError(
-                {"account_tier": "Le forfait ne s'applique qu'aux comptes citoyens (USER)."}
-            )
+            raise validation_error("ERR_TIER_CITIZEN_ONLY", self.context, field="account_tier")
         return attrs
 
     def update(self, instance, validated_data):
@@ -343,7 +336,7 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exclude(pk=self.instance.pk).exists():
-            raise serializers.ValidationError("Cet email est déjà utilisé.")
+            raise validation_error("ERR_EMAIL_ALREADY_USED", self.context)
         return value
 
 
@@ -380,7 +373,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         """Valide que l'email n'est pas déjà utilisé"""
         if User.objects.filter(email=value).exclude(pk=self.instance.pk).exists():
-            raise serializers.ValidationError("Cet email est déjà utilisé.")
+            raise validation_error("ERR_EMAIL_ALREADY_USED", self.context)
         return value
     
     
@@ -393,7 +386,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Aucun utilisateur avec cet email.")
+            raise validation_error("ERR_USER_NOT_FOUND", self.context)
         return value
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
@@ -407,7 +400,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['new_password'] != data['confirm_password']:
-            raise serializers.ValidationError({"confirm_password": "Les mots de passe ne correspondent pas."})
+            raise validation_error("ERR_PASSWORDS_MISMATCH", self.context, field="confirm_password")
         return data
 
 
@@ -418,9 +411,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data["new_password"] != data["confirm_password"]:
-            raise serializers.ValidationError(
-                {"confirm_password": "Les mots de passe ne correspondent pas."}
-            )
+            raise validation_error("ERR_PASSWORDS_MISMATCH", self.context, field="confirm_password")
         validate_password(data["new_password"])
         return data
 
@@ -437,8 +428,10 @@ class NotificationPreferencesSerializer(serializers.Serializer):
 
         unknown = set(attrs.keys()) - NOTIFICATION_PREFERENCE_KEYS
         if unknown:
-            raise serializers.ValidationError(
-                f"Clés inconnues : {', '.join(sorted(unknown))}"
+            raise validation_error(
+                "ERR_UNKNOWN_NOTIFICATION_KEYS",
+                self.context,
+                keys=", ".join(sorted(unknown)),
             )
         return attrs
 

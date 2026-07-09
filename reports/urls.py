@@ -12,6 +12,7 @@ from .views import (
     CitizenReportsListView,
     ReportStatsView,
     ReportAISettingsView,
+    PlatformThemeView,
     NewsIngestView,
     NewsIngestStatusView,
     TrainModelsView,
@@ -28,6 +29,7 @@ from .vision_views import (
 
 urlpatterns = [
     # --- Accès général ---
+    path('platform/theme/', PlatformThemeView.as_view(), name='platform-theme'),
     path('reports/', ReportCreateView.as_view(), name='report-create'),
     path('reports/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
     path('reports/list/', ReportListView.as_view(), name='report-list'),

@@ -1,6 +1,6 @@
 {
   "status": "trained",
-  "trained_at": "2026-07-02T20:10:46.465591+00:00",
+  "trained_at": "2026-07-09T09:11:42.209758+00:00",
   "algorithm": "GradientBoosting",
   "features": [
     "latitude",

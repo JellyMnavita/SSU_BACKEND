@@ -201,6 +201,18 @@ class ReportAISettings(models.Model):
         default=30,
         help_text="Jours d'affichage des signalements validés sur la carte publique (0 = illimité).",
     )
+    ACCENT_THEME_CHOICES = [
+        ("bleu", "Bleu"),
+        ("vert", "Vert"),
+        ("jaune", "Jaune"),
+        ("gris", "Gris"),
+    ]
+    accent_theme = models.CharField(
+        max_length=10,
+        choices=ACCENT_THEME_CHOICES,
+        default="bleu",
+        help_text="Thème couleur de la plateforme (boutons, surbrillances, accents).",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

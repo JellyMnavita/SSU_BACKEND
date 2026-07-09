@@ -4,6 +4,8 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import ValidationError
+
+from common.i18n import translate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -106,7 +108,7 @@ class TrustedContactListCreateView(generics.ListCreateAPIView):
         count = TrustedContact.objects.filter(user=self.request.user).count()
         if count >= MAX_TRUSTED_CONTACTS:
             raise ValidationError(
-                f"Maximum {MAX_TRUSTED_CONTACTS} contacts de confiance."
+                translate("ERR_MAX_TRUSTED_CONTACTS", max=MAX_TRUSTED_CONTACTS)
             )
         serializer.save(user=self.request.user)
 

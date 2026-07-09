@@ -35,7 +35,15 @@ class Command(BaseCommand):
             self.stdout.write(result["selection_reason"])
         if result.get("gold_metrics"):
             gm = result["gold_metrics"]
+            policy = result.get("split_policy") or {}
+            gold_n = (result.get("samples") or {}).get("gold", "?")
             self.stdout.write(
-                f"Gold eval — accuracy={gm.get('accuracy', 0):.3f}, "
+                f"Gold eval (données réelles uniquement, n={gold_n}) — "
+                f"accuracy={gm.get('accuracy', 0):.3f}, "
                 f"f1_macro={gm.get('f1_macro', 0):.3f}"
             )
+            if policy.get("synthetic_train_only"):
+                self.stdout.write(
+                    f"Synthétiques en entraînement uniquement : "
+                    f"{policy.get('train_synthetic', 0)} ligne(s)."
+                )

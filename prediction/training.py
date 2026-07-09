@@ -31,6 +31,8 @@ def train_gradient_boosting_classifier(
         "selection_reason": summary.get("selection_reason"),
         "test_metrics": summary.get("test_metrics"),
         "gold_metrics": summary.get("gold_metrics"),
+        "split_policy": summary.get("split_policy", {}),
+        "samples": summary.get("samples", {}),
     }
 
 

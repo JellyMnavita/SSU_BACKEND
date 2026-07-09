@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from common.i18n import validation_error
 from locations.kinshasa_bounds import assert_kinshasa_coordinates
 
 from .models import CompanySite
@@ -32,16 +33,14 @@ class CompanySiteSerializer(serializers.ModelSerializer):
             assert_kinshasa_coordinates(lat, lng)
         radius = attrs.get("alert_radius_m", getattr(self.instance, "alert_radius_m", 1000))
         if radius < 200 or radius > 10000:
-            raise serializers.ValidationError(
-                {"alert_radius_m": "Le rayon doit être entre 200 m et 10 km."}
-            )
+            raise validation_error("ERR_RADIUS_RANGE", self.context, field="alert_radius_m")
         return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user
         count = CompanySite.objects.filter(user=user).count()
         if count >= MAX_SITES_PER_USER:
-            raise serializers.ValidationError(
-                f"Maximum {MAX_SITES_PER_USER} sites par organisation."
+            raise validation_error(
+                "ERR_MAX_SITES", self.context, max=MAX_SITES_PER_USER
             )
         return CompanySite.objects.create(user=user, **validated_data)

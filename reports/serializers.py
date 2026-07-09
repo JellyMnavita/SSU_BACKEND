@@ -9,31 +9,32 @@ import hashlib
 import json
 from rest_framework.exceptions import ParseError
 from datetime import date
+from common.i18n import validation_error, translate
 
 def _parse_birth_date(value):
     if isinstance(value, date):
         return value
     if not value:
-        raise ValidationError("Date de naissance requise.")
+        raise ValidationError(translate("ERR_BIRTHDATE_REQUIRED"))
     try:
         # accepte 'YYYY-MM-DD'
         return date.fromisoformat(str(value))
     except Exception:
-        raise ValidationError("Format de date de naissance invalide (YYYY-MM-DD).")
+        raise ValidationError(translate("ERR_BIRTHDATE_FORMAT"))
 
 
 def _validate_birth_date(birth_date: date) -> None:
     today = date.today()
     if birth_date > today:
-        raise ValidationError("Date de naissance invalide (dans le futur).")
+        raise ValidationError(translate("ERR_BIRTHDATE_FUTURE"))
     age = today.year - birth_date.year - (
         (today.month, today.day) < (birth_date.month, birth_date.day)
     )
     # bornes simples pour bloquer les valeurs absurdes
     if age < 13:
-        raise ValidationError("Date de naissance invalide (âge trop faible).")
+        raise ValidationError(translate("ERR_BIRTHDATE_TOO_YOUNG"))
     if age > 120:
-        raise ValidationError("Date de naissance invalide (âge trop élevé).")
+        raise ValidationError(translate("ERR_BIRTHDATE_TOO_OLD"))
 
 class ReportSerializer(serializers.ModelSerializer):
     # Champs personnalisés
@@ -173,11 +174,9 @@ class ReportSerializer(serializers.ModelSerializer):
         if value is None:
             return value
         if value.size > 5 * 1024 * 1024:
-            raise serializers.ValidationError(
-                "La taille de l'image ne doit pas dépasser 5MB"
-            )
+            raise validation_error("ERR_IMAGE_TOO_LARGE", self.context)
         if not value.name.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
-            raise serializers.ValidationError("Format d'image non supporté")
+            raise validation_error("ERR_IMAGE_FORMAT", self.context)
         value.seek(0)
         digest = hashlib.sha256(value.read()).hexdigest()
         value.seek(0)
@@ -186,9 +185,7 @@ class ReportSerializer(serializers.ModelSerializer):
         if self.instance is not None:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError(
-                "Cette image a déjà été utilisée pour un signalement."
-            )
+            raise validation_error("ERR_IMAGE_DUPLICATE", self.context)
         return value
 
     def validate(self, data):
@@ -199,7 +196,7 @@ class ReportSerializer(serializers.ModelSerializer):
             location = data.get("location", self.instance.location)
             if latitude is not None and longitude is not None:
                 if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
-                    raise ValidationError("Coordonnées GPS invalides")
+                    raise ValidationError(translate("ERR_INVALID_GPS"))
                 assert_report_coordinates(
                     latitude,
                     longitude,
@@ -214,15 +211,13 @@ class ReportSerializer(serializers.ModelSerializer):
             try:
                 citizen_data = json.loads(citizen_data)
             except json.JSONDecodeError:
-                raise ParseError("Format JSON invalide pour citizen_data")
+                raise ParseError(translate("ERR_INVALID_JSON"))
         if citizen_data:
             data["citizen_data"] = citizen_data
 
         if user and user.is_authenticated:
             if user.type_user.code_typeUser not in ["ADMIN", "USER"]:
-                raise ValidationError(
-                    "Seuls les ADMIN et USER peuvent créer des reports"
-                )
+                raise ValidationError(translate("ERR_REPORT_ROLE_ONLY"))
             data["user"] = user
             data["source"] = "U"  # Utilisateur inscrit
         elif citizen_data:
@@ -236,18 +231,18 @@ class ReportSerializer(serializers.ModelSerializer):
                 "quartier",
             ]
             if not all(field in citizen_data for field in required_fields):
-                raise ValidationError("Toutes les informations citoyen sont requises")
+                raise ValidationError(translate("ERR_CITIZEN_INFO_REQUIRED"))
             # Validation date de naissance (bloque future/absurde)
             citizen_data["birth_date"] = _parse_birth_date(citizen_data.get("birth_date"))
             _validate_birth_date(citizen_data["birth_date"])
             data["source"] = "C"  # Citoyen anonyme
         else:
-            raise ValidationError("Source non autorisée")
+            raise ValidationError(translate("ERR_SOURCE_NOT_ALLOWED"))
 
         if not (-90 <= data["latitude"] <= 90) or not (
             -180 <= data["longitude"] <= 180
         ):
-            raise ValidationError("Coordonnées GPS invalides")
+            raise ValidationError(translate("ERR_INVALID_GPS"))
 
         assert_report_coordinates(
             data["latitude"],
@@ -274,9 +269,7 @@ class ReportSerializer(serializers.ModelSerializer):
             try:
                 citizen_quartier = Quartier.objects.get(id=citizen_data["quartier"])
             except Quartier.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"quartier": "Quartier invalide pour le citoyen"}
-                )
+                raise validation_error("ERR_INVALID_QUARTIER", self.context, field="quartier")
 
             try:
                 citizen = Citizen.objects.get(email=citizen_data["email"])
@@ -401,7 +394,7 @@ class UserReportUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         instance = self.instance
         if instance and instance.status == "V":
-            raise ValidationError("Un signalement vérifié ne peut plus être modifié.")
+            raise ValidationError(translate("ERR_VERIFIED_REPORT_LOCKED"))
 
         latitude = data.get("latitude", getattr(instance, "latitude", None))
         longitude = data.get("longitude", getattr(instance, "longitude", None))

@@ -9,11 +9,9 @@ from pathlib import Path
 from rest_framework.exceptions import ValidationError
 from shapely.geometry import Point, shape
 
-_BOUNDARY_PATH = Path(__file__).resolve().parent / "data" / "kinshasa-boundary.geojson"
+from common.i18n import translate
 
-KINSHASA_GEO_ERROR = (
-    "Les signalements et alertes ne sont autorisés qu'à Kinshasa (RDC)."
-)
+_BOUNDARY_PATH = Path(__file__).resolve().parent / "data" / "kinshasa-boundary.geojson"
 
 
 @lru_cache(maxsize=1)
@@ -54,4 +52,4 @@ def is_within_kinshasa_bounds(latitude: float, longitude: float) -> bool:
 
 def assert_kinshasa_coordinates(latitude: float, longitude: float) -> None:
     if not is_within_kinshasa_bounds(latitude, longitude):
-        raise ValidationError(KINSHASA_GEO_ERROR)
+        raise ValidationError(translate("ERR_KINSHASA_ONLY"))

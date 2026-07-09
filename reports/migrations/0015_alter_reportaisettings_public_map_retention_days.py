@@ -1,0 +1,19 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ("reports", "0014_reportaisettings_public_map_retention_days"),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name="reportaisettings",
+            name="public_map_retention_days",
+            field=models.PositiveIntegerField(
+                default=30,
+                help_text="Jours d'affichage des signalements validés sur la carte publique (0 = illimité).",
+            ),
+        ),
+    ]

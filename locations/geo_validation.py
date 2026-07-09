@@ -10,17 +10,9 @@ from functools import lru_cache
 from rest_framework.exceptions import ValidationError
 from shapely.geometry import Point, Polygon
 
+from common.i18n import translate
 from locations.kinshasa_bounds import assert_kinshasa_coordinates, is_within_kinshasa_bounds
 from scrapping.services.geocoder import COMMUNE_CENTERS, QUARTIER_HINTS, _centroid_from_limites
-
-WATER_ZONE_ERROR = (
-    "Les coordonnées pointent vers le fleuve Congo ou une zone d'eau — "
-    "signalement non accepté."
-)
-INCONSISTENT_LOCATION_ERROR = (
-    "Les coordonnées GPS ne correspondent pas au lieu indiqué dans Kinshasa. "
-    "Vérifiez la position sur la carte."
-)
 
 # Corridor étroit du fleuve Congo (ouest de Kinshasa uniquement).
 # L'ancien polygone était trop large à l'est et marquait Selembao / Mont Ngafula à tort.
@@ -90,7 +82,7 @@ def is_on_water_zone(latitude: float, longitude: float) -> bool:
 
 def assert_not_on_water(latitude: float, longitude: float) -> None:
     if is_on_water_zone(latitude, longitude):
-        raise ValidationError(WATER_ZONE_ERROR)
+        raise ValidationError(translate("ERR_WATER_ZONE"))
 
 
 @lru_cache(maxsize=1)
@@ -216,7 +208,7 @@ def assert_location_coordinate_consistency(
             max_km = QUARTIER_MAX_DISTANCE_KM
 
     if mismatch_km > max_km:
-        raise ValidationError(INCONSISTENT_LOCATION_ERROR)
+        raise ValidationError(translate("ERR_INCONSISTENT_LOCATION"))
 
 
 def assert_report_coordinates(

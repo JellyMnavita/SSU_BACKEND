@@ -35,10 +35,6 @@ VISION_MIN_CONF = 0.20
 VISION_AUTRE_MIN = 0.25
 
 
-def _looks_benign(description: str) -> bool:
-    return looks_benign(description)
-
-
 _QUICK_PLACEHOLDER_MARKERS = (
     "signalement rapide",
     "double appui",
@@ -270,7 +266,7 @@ def moderation_from_fusion(
             ],
         }
 
-    if (nlp.get("model_used") == "benign_filter" or _looks_benign(description)) and not strong_non_benign:
+    if (nlp.get("model_used") == "benign_filter" or looks_benign(description)) and not strong_non_benign:
         return {
             "recommendation": "R",
             "confidence": 0.85,

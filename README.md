@@ -2,7 +2,7 @@
 
 Service Django/DRF de **SSU Bokengi**, une plateforme de signalement et d’alerte de sécurité urbaine à Kinshasa. Les citoyens déposent un incident (texte, photo, position). Le backend qualifie ce signalement, puis estime un **degré de danger** (faible, modéré, élevé) sur une grille géographique.
 
-Ce dépôt contient l’API, la politique de fusion des modèles, le point d’entrée d’entraînement et les métriques de la dernière expérience enregistrée. Les poids, les exports de signalements et les secrets ne sont pas versionnés.
+Ce dépôt contient l’API, la fusion des modèles, le pipeline scikit-learn (`prediction_shared/`), le lexique NLP (`nlp_shared/`) et les métriques de la dernière expérience enregistrée. Les poids, les exports de signalements et les secrets ne sont pas versionnés.
 
 ## Ce que fait le système
 
@@ -11,7 +11,7 @@ Ce dépôt contient l’API, la politique de fusion des modèles, le point d’e
 3. Une **fusion pondérée** transforme ces sorties en un score de risque entre 0 et 1, puis en un degré F / M / E, et en une recommandation de modération : valider, rejeter ou laisser en revue humaine.
 4. Les signalements validés alimentent un **classifieur géospatial** (scikit-learn). Il sert une carte de danger et des itinéraires.
 
-Les services NLP et vision ne sont pas entraînés dans ce dépôt : le backend les appelle en HTTP (`ai_gateway/`). L’entraînement tabulaire est lancé depuis `prediction/training.py`, qui délègue au paquet `prediction_shared` (copié dans l’image Docker au build, à côté de ce service).
+Les services NLP et vision tournent à part et sont appelés en HTTP (`ai_gateway/`). L’entraînement tabulaire est dans `prediction_shared/training.py`, lancé par `prediction/training.py`. Le lexique et les filtres de texte sont dans `nlp_shared/`.
 
 ## Installation
 
@@ -26,7 +26,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Sous Docker, depuis le dépôt parent qui contient aussi `prediction_shared/` et `nlp_shared/` :
+Sous Docker, le build part du dossier parent (il recopie ces deux paquets, déjà présents ici) :
 
 ```bash
 docker compose up --build
@@ -131,7 +131,7 @@ Sur le test, les classes modéré et élevé ont un F1 à 0 : le modèle s’eff
 
 ## Fusion NLP et vision
 
-Fichier `ai_gateway/services/fusion.py`. Chaque modality produit un risque = gravité du label × confiance du service.
+Fichier `ai_gateway/services/fusion.py`. Chaque modalité produit un risque = gravité du label × confiance du service.
 
 Gravités texte : kidnapping 1,0, violence 0,95, agression 0,70, vol 0,55, vandalisme 0,50, autre 0,10. Gravités image : arme 1,0, incendie 0,95, accident 0,60, foule 0,50, véhicule suspect 0,45, autre 0,08. Une détection visuelle sous 0,20 de confiance est ignorée.
 
@@ -153,7 +153,11 @@ Les seuils sont des choix de produit, pas des probabilités calibrées. Un lexiq
 |---------|------|
 | `ai_gateway/services/fusion.py` | score, degré, décision valider / rejeter / attendre |
 | `ai_gateway/services/report_enrichment.py` | appels NLP et vision, filtres d’actualité |
-| `prediction/training.py` | lance le pipeline et résume l’expérience |
+| `prediction_shared/training.py` | comparaison des 6 modèles, validation croisée, fit final |
+| `prediction_shared/features.py` | variables géospatiales, sans le degré des voisins |
+| `prediction_shared/dataset.py` | nettoyage et découpage train / val / test / gold |
+| `nlp_shared/filters.py` | rejets anodins et actualités hors incident |
+| `prediction/training.py` | point d’entrée Django du pipeline |
 | `prediction/models/training_summary.json` | métriques de l’exécution du 4 octobre 2026 |
 | `prediction/models/cv_results.json` | comparaison des modèles |
 

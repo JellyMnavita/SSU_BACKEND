@@ -1,7 +1,10 @@
-from django.utils import timezone
-from .models import UserActivityLog
 import json
-from urllib.parse import urlparse
+import logging
+
+from .models import UserActivityLog
+
+logger = logging.getLogger(__name__)
+
 
 class UserActivityMiddleware:
     def __init__(self, get_response):
@@ -25,9 +28,9 @@ class UserActivityMiddleware:
                 self._handle_password_change(request)
             elif request.user.is_authenticated:
                 self._handle_common_actions(request)
-        except Exception as e:
+        except Exception:
             # Log l'erreur sans interrompre le flux
-            print(f"Error logging activity: {str(e)}")
+            logger.exception("Journal d'activité impossible à écrire")
         
         return response
 

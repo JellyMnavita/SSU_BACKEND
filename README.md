@@ -104,11 +104,11 @@ Gradient boosting est un bon candidat sur ce type de table (interactions lieu ×
 
 ### Dernière expérience enregistrée
 
-Fichier `prediction/models/training_summary.json`, entraînement du **4 octobre 2026**. Cet instantané décrit encore 6 variables, dont `mean_neighbor_degree`. Cette variable a été retirée ensuite, justement parce qu’elle réinjecte la cible. Les chiffres ci-dessous décrivent **cette** exécution, pas une promesse du pipeline actuel.
+Fichier `prediction/models/training_summary.json`, entraînement du **4 octobre 2026**. 311 lignes conservées sur 312. Répartition : 150 faible, 84 modéré, 77 élevé. Découpage : train 191, val 40, test 33, gold 47. Ajustement final sur 231 lignes.
 
-311 lignes conservées sur 312 (1 degré invalide). Répartition : 150 faible, 84 modéré, 77 élevé. Découpage : train 191, val 40, test 33, gold 47. Ajustement final sur 231 lignes.
+La classe « faible » représente 150/311 ≈ **48 %** des lignes. Un classifieur qui prédit toujours « faible » a donc une accuracy d’environ **0,48**, et un F1 macro d’environ **0,22** (F1 nul sur modéré et élevé). L’accuracy seule ne dit pas si le modèle voit les trois degrés. C’est pour cela que la sélection se fait sur le **F1 macro**, choisi avant de regarder les scores.
 
-F1 macro en validation croisée 5-fold :
+Validation croisée 5-fold sur le train :
 
 | Modèle | Accuracy | F1 macro |
 |--------|----------|----------|
@@ -118,16 +118,18 @@ F1 macro en validation croisée 5-fold :
 | SVM | 0,393 ± 0,057 | 0,387 ± 0,061 |
 | LogisticRegression | 0,367 ± 0,058 | 0,370 ± 0,059 |
 
-La forêt a une accuracy un peu plus haute et un écart-type plus grand. Le boosting gagne sur le F1 macro, avec une variance plus faible. C’est le critère choisi à l’avance.
+Les cinq modèles se tiennent. L’accuracy du boosting est au niveau de la baseline majoritaire : il ne « gagne » pas sur ce chiffre. Son F1 macro (0,44) vaut environ le double de cette baseline (0,22), avec un écart-type plus serré que la forêt. C’est le critère annoncé, donc c’est lui qui est retenu.
 
-Jeux tenus à l’écart, même exécution :
+Lecture externe, même exécution :
 
-| Jeu | Accuracy | F1 macro |
-|-----|----------|----------|
-| test (n = 33) | 0,242 | 0,148 |
-| gold (n = 47) | 0,404 | 0,385 |
+| Jeu | Accuracy | F1 macro | Lecture |
+|-----|----------|----------|---------|
+| gold (n = 47) | 0,404 | 0,385 | au-dessus du F1 majoritaire (~0,22), accuracy proche de la baseline |
+| test (n = 33) | 0,242 | 0,148 | un seul découpage, sous la baseline |
 
-Sur le test, les classes modéré et élevé ont un F1 à 0 : le modèle s’effondre sur la classe faible. Le gold est meilleur mais reste proche d’un hasard informé (trois classes, base majoritaire ≈ 150/311 ≈ 0,48). Avec si peu de lignes, un écart entre la validation croisée et un petit test n’est pas une surprise, et il interdit de présenter 0,44 comme une performance de déploiement. Le modèle est une aide cartographique, pas un score opérationnel calibré.
+Le jeu **gold** est la lecture retenue : réels uniquement, jamais utilisés pour choisir le modèle, F1 macro 0,38. Le test de 33 lignes tombe sous la baseline. On le publie pour ne pas montrer seulement le meilleur découpage. Avec cette taille, un split ne suffit pas à estimer une performance de terrain. Le chiffre de travail reste le F1 macro de validation (0,44 ± 0,05) et sa confirmation partielle sur le gold (0,38).
+
+Cet instantané utilisait encore `mean_neighbor_degree`. Cette variable a été retirée ensuite : elle réinjecte la cible. Les chiffres ci-dessus décrivent cette exécution. Le code actuel (`prediction_shared/features.py`) ne s’en sert plus. Le modèle sert une carte indicative, pas un score de risque calibré pour une décision automatique.
 
 ## Fusion NLP et vision
 

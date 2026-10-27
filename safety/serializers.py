@@ -10,6 +10,8 @@ def _validate_kin_pair(latitude: float, longitude: float) -> None:
 
 
 class TrustedContactSerializer(serializers.ModelSerializer):
+    telegram_linked = serializers.SerializerMethodField()
+
     class Meta:
         model = TrustedContact
         fields = [
@@ -18,11 +20,15 @@ class TrustedContactSerializer(serializers.ModelSerializer):
             "phone",
             "email",
             "relationship",
+            "telegram_linked",
             "mobile_local_id",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "telegram_linked", "created_at", "updated_at"]
+
+    def get_telegram_linked(self, obj: TrustedContact) -> bool:
+        return bool(obj.telegram_chat_id)
 
 
 class TrackingPointSerializer(serializers.ModelSerializer):

@@ -12,6 +12,8 @@ from django.utils import timezone
 from users.models import User
 
 from .models import SafetyAlert, TrustedContact, TrackingSession
+from .telegram_notify import send_safety_alert as send_telegram_alert
+from .twilio_whatsapp import send_safety_alert
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +128,7 @@ def _notify_trusted_contacts(
     contacts = list(
         TrustedContact.objects.filter(user=initiator, id__in=contact_ids)
     )
-    stats = {"in_app": 0, "email": 0, "skipped": 0}
+    stats = {"in_app": 0, "email": 0, "whatsapp": 0, "telegram": 0, "skipped": 0}
 
     for contact in contacts:
         recipient_user = find_ssu_user_for_contact(contact)
@@ -176,6 +178,28 @@ def _notify_trusted_contacts(
             ):
                 stats["email"] += 1
                 notified = True
+
+        if contact.phone and send_safety_alert(
+            to_phone=contact.phone,
+            kind=kind,
+            contact_name=contact.name,
+            initiator_name=initiator_name,
+            track_url=track_url,
+            extra=email_extra,
+        ):
+            stats["whatsapp"] += 1
+            notified = True
+
+        if contact.telegram_chat_id and send_telegram_alert(
+            chat_id=contact.telegram_chat_id,
+            kind=kind,
+            contact_name=contact.name,
+            initiator_name=initiator_name,
+            track_url=track_url,
+            extra=email_extra,
+        ):
+            stats["telegram"] += 1
+            notified = True
 
         if not notified:
             stats["skipped"] += 1
@@ -254,7 +278,7 @@ def notify_checkin_missed_contacts(
     contacts = list(
         TrustedContact.objects.filter(user=initiator, id__in=contact_ids)
     )
-    stats = {"in_app": 0, "email": 0, "skipped": 0}
+    stats = {"in_app": 0, "email": 0, "whatsapp": 0, "telegram": 0, "skipped": 0}
 
     for contact in contacts:
         recipient_user = find_ssu_user_for_contact(contact)
@@ -299,6 +323,26 @@ def notify_checkin_missed_contacts(
             ):
                 stats["email"] += 1
                 notified = True
+
+        if contact.phone and send_safety_alert(
+            to_phone=contact.phone,
+            kind="checkin_missed",
+            contact_name=contact.name,
+            initiator_name=initiator_name,
+            track_url=track_url,
+        ):
+            stats["whatsapp"] += 1
+            notified = True
+
+        if contact.telegram_chat_id and send_telegram_alert(
+            chat_id=contact.telegram_chat_id,
+            kind="checkin_missed",
+            contact_name=contact.name,
+            initiator_name=initiator_name,
+            track_url=track_url,
+        ):
+            stats["telegram"] += 1
+            notified = True
 
         if not notified:
             stats["skipped"] += 1

@@ -24,6 +24,7 @@ def train_gradient_boosting_classifier(
     return {
         "status": summary.get("status", "trained"),
         "algorithm": summary.get("algorithm"),
+        "best_params": summary.get("best_params", {}),
         "samples_used": summary.get("samples", {}).get("fit_total", 0),
         "class_distribution": summary.get("class_distribution", {}).get("full", {}),
         "model_path": summary.get("model_path", str(model_path)),
@@ -33,6 +34,15 @@ def train_gradient_boosting_classifier(
         "gold_metrics": summary.get("gold_metrics"),
         "split_policy": summary.get("split_policy", {}),
         "samples": summary.get("samples", {}),
+        "ranking": summary.get("ranking", []),
+        "comparison": summary.get("comparison", {}),
+        "features": summary.get("features", []),
+        "feature_catalog": summary.get("feature_catalog", []),
+        "feature_correlations_train": summary.get("feature_correlations_train", []),
+        "cleaning": summary.get("cleaning", {}),
+        "plain_language": summary.get("plain_language", {}),
+        "pipeline": summary.get("pipeline", {}),
+        "cv_folds": summary.get("cv_folds"),
     }
 
 

@@ -1,5 +1,8 @@
 from django.urls import path
 
+from .whatsapp_webhook import whatsapp_webhook
+from .twilio_webhook import twilio_whatsapp_webhook
+from .telegram_webhook import telegram_webhook
 from .views import (
     AdminSafetyDashboardView,
     CheckInConfirmView,
@@ -15,13 +18,33 @@ from .views import (
     TrackingPointCreateView,
     TrackingSessionLiveView,
     TrackingSessionStopView,
+    MyTrackingSessionsView,
     TripStartView,
     TripStopView,
     TrustedContactDetailView,
     TrustedContactListCreateView,
+    TrustedContactTelegramLinkView,
 )
 
 urlpatterns = [
+    # Webhook Meta WhatsApp Cloud API
+    path(
+        "webhooks/whatsapp/",
+        whatsapp_webhook,
+        name="whatsapp-webhook",
+    ),
+    # Webhook Twilio WhatsApp (status + inbound)
+    path(
+        "webhooks/twilio/whatsapp/",
+        twilio_whatsapp_webhook,
+        name="twilio-whatsapp-webhook",
+    ),
+    # Webhook Telegram Bot API (liaison /start + réponses)
+    path(
+        "webhooks/telegram/",
+        telegram_webhook,
+        name="telegram-webhook",
+    ),
     # Contacts de confiance
     path(
         "safety/trusted-contacts/",
@@ -32,6 +55,11 @@ urlpatterns = [
         "safety/trusted-contacts/<int:pk>/",
         TrustedContactDetailView.as_view(),
         name="trusted-contacts-detail",
+    ),
+    path(
+        "safety/trusted-contacts/<int:pk>/telegram-link/",
+        TrustedContactTelegramLinkView.as_view(),
+        name="trusted-contacts-telegram-link",
     ),
     # SOS / signalement rapide + suivi
     path(
@@ -48,6 +76,11 @@ urlpatterns = [
         "safety/tracking/<str:token>/stop/",
         TrackingSessionStopView.as_view(),
         name="tracking-stop",
+    ),
+    path(
+        "safety/tracking/mine/",
+        MyTrackingSessionsView.as_view(),
+        name="tracking-mine",
     ),
     path(
         "safety/tracking/<str:token>/points/",

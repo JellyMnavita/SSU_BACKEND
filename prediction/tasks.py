@@ -61,8 +61,44 @@ def train_prediction_model():
             from ai_gateway.clients.prediction import PredictionServiceClient
 
             client = PredictionServiceClient()
-            results["train_microservice"] = client.train()
+            micro = client.train()
+            results["train_microservice"] = micro
             results["reload_microservice"] = client.reload()
+            # Aligne active_model.json côté Django sur le modèle servi par le micro
+            # (évite badge / raison désynchronisés si volumes web ≠ celery).
+            try:
+                import json
+                from datetime import datetime, timezone
+                from pathlib import Path
+
+                active_path = Path(settings.BASE_DIR) / "prediction" / "model" / "active_model.json"
+                active_path.parent.mkdir(parents=True, exist_ok=True)
+                local = results.get("train_local") or {}
+                algo = micro.get("algorithm") or local.get("algorithm")
+                comparison = micro.get("comparison") or local.get("comparison") or {}
+                payload = {
+                    "algorithm": algo,
+                    "best_params": micro.get("best_params") or local.get("best_params") or {},
+                    "trained_at": datetime.now(timezone.utc).isoformat(),
+                    "f1_macro_cv": (comparison.get(algo) or {}).get("f1_macro_mean")
+                    if algo
+                    else None,
+                    "samples_used": micro.get("samples_used") or local.get("samples_used"),
+                    "features": micro.get("features") or local.get("features") or [],
+                    "feature_catalog": micro.get("feature_catalog")
+                    or local.get("feature_catalog")
+                    or [],
+                    "selection_reason": micro.get("selection_reason")
+                    or local.get("selection_reason"),
+                    "ranking": micro.get("ranking") or local.get("ranking") or [],
+                    "model_path": micro.get("model_path") or local.get("model_path"),
+                }
+                active_path.write_text(
+                    json.dumps(payload, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+            except Exception as sync_exc:
+                results["active_model_sync_error"] = str(sync_exc)
         except Exception as exc:
             results["train_microservice_error"] = str(exc)
 

@@ -74,6 +74,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Passwords do not match.",
         "ln": "Ba mot de passe ekokani te.",
     },
+    "ERR_ADMIN_PASSWORD_REQUIRED": {
+        "fr": "Saisissez votre mot de passe administrateur pour confirmer.",
+        "en": "Enter your administrator password to confirm.",
+        "ln": "Kotia mot de passe na yo ya admin mpo na kondima.",
+    },
+    "ERR_ADMIN_PASSWORD_INVALID": {
+        "fr": "Mot de passe administrateur incorrect.",
+        "en": "Incorrect administrator password.",
+        "ln": "Mot de passe ya admin ezali malamu te.",
+    },
     "ERR_TIER_CITIZEN_ONLY": {
         "fr": "Le forfait ne s'applique qu'aux comptes citoyens (USER).",
         "en": "Tier applies only to citizen (USER) accounts.",
@@ -190,9 +200,19 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ln": "Elilingi oyo esalelaki déjà mpo na signalement.",
     },
     "ERR_REPORT_ROLE_ONLY": {
-        "fr": "Seuls les ADMIN et USER peuvent créer des signalements.",
-        "en": "Only ADMIN and USER roles can create reports.",
-        "ln": "Kaka ADMIN mpe USER bakoki kosala ba signalement.",
+        "fr": "Seuls les administrateurs, citoyens et services gouvernementaux peuvent créer des signalements.",
+        "en": "Only administrators, citizens and government accounts can create reports.",
+        "ln": "Kaka administrateur, citoyen mpe gouvernement bakoki kosala ba signalement.",
+    },
+    "ERR_REPORT_RATE_LIMIT_BURST": {
+        "fr": "Trop de signalements en peu de temps. Réessayez dans quelques minutes.",
+        "en": "Too many reports in a short time. Try again in a few minutes.",
+        "ln": "Bisango ebele mingi na ntango mokuse. Meka lisusu na miniti moke.",
+    },
+    "ERR_REPORT_RATE_LIMIT_DAILY": {
+        "fr": "Limite journalière de signalements atteinte. Réessayez demain.",
+        "en": "Daily report limit reached. Try again tomorrow.",
+        "ln": "Limite ya mokolo esili. Meka lisusu lobi.",
     },
     "ERR_INVALID_QUARTIER": {
         "fr": "Quartier invalide pour le citoyen.",

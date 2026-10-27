@@ -1,3 +1,4 @@
+
 """Invalidation du cache liste signalements après enrichissement IA."""
 
 from __future__ import annotations

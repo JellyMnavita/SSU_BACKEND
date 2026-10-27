@@ -34,6 +34,12 @@ from .serializers import (
     UserReportUpdateSerializer,
 )
 from .report_quality import SYNTHETIC_URL_PREFIX
+from .rate_limit import (
+    ALLOWED_CREATOR_ROLES,
+    ReportRateLimitError,
+    enforce_report_creation_limit,
+)
+from common.i18n import translate, get_lang_from_request
 from company.services import _build_brief, _commune_stats, _risk_label
 
 
@@ -42,12 +48,25 @@ class ReportCreateView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
+        try:
+            enforce_report_creation_limit(request)
+        except ReportRateLimitError as exc:
+            lang = get_lang_from_request(request)
+            return Response(
+                {
+                    "code": exc.code,
+                    "detail": translate(exc.code, lang=lang),
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
         user = request.user if request.user.is_authenticated else None
 
         if user:
-            if user.type_user.code_typeUser not in ["ADMIN", "USER"]:
+            role = getattr(getattr(user, "type_user", None), "code_typeUser", None)
+            if role not in ALLOWED_CREATOR_ROLES:
                 return Response(
-                    {"error": "Seuls les ADMIN et USER peuvent créer des reports"},
+                    {"error": "Seuls les ADMIN, USER et GOV peuvent créer des reports"},
                     status=status.HTTP_403_FORBIDDEN,
                 )
         elif "citizen_data" not in request.data:
@@ -159,6 +178,10 @@ def _apply_report_filters(qs, request):
     if user_type in ("ADMIN", "USER", "GOV", "COMPANY"):
         qs = qs.filter(user__type_user__code_typeUser=user_type)
 
+    has_picture = (request.query_params.get("has_picture") or "").strip().lower()
+    if has_picture in ("1", "true", "yes"):
+        qs = qs.filter(picture__isnull=False).exclude(picture="")
+
     return qs
 
 
@@ -212,6 +235,7 @@ class ReportListView(generics.ListAPIView):
                 "ai_processing_status": request.query_params.get("ai_processing_status"),
                 "reporter_type": request.query_params.get("reporter_type"),
                 "user_type": request.query_params.get("user_type"),
+                "has_picture": request.query_params.get("has_picture"),
                 "page": request.query_params.get("page", "1"),
                 "page_size": request.query_params.get("page_size", "20"),
             },
@@ -327,8 +351,13 @@ class UserReportUpdateView(generics.UpdateAPIView):
         ).distinct().exclude(status="V")
 
     def perform_update(self, serializer):
-        serializer.save()
+        report = serializer.save()
         invalidate_reports_list_cache()
+        # Après enrichissement d'un signalement rapide, relancer l'IA.
+        if report.source == "Q" and getattr(settings, "AI_GATEWAY_ENABLED", True):
+            report.ai_processing_status = "pending"
+            report.save(update_fields=["ai_processing_status"])
+            process_report_ai.delay(report.id)
 
 
 class CitizenReportsListView(generics.ListAPIView):
@@ -407,6 +436,30 @@ class ReportAISettingsView(APIView):
         payload["nlp_model"] = nlp_model
         payload["last_model_training"] = last_train
         payload["vision_dataset"] = dataset_stats()
+
+        # Modèle de prédiction actif (fichier écrit à chaque train)
+        prediction_active = None
+        try:
+            from pathlib import Path
+
+            from django.conf import settings as dj_settings
+
+            active_path = (
+                Path(dj_settings.BASE_DIR) / "prediction" / "model" / "active_model.json"
+            )
+            if active_path.is_file():
+                import json
+
+                prediction_active = json.loads(active_path.read_text(encoding="utf-8"))
+        except Exception:
+            prediction_active = None
+        payload["prediction_active_model"] = prediction_active
+        try:
+            from prediction_shared.labels import feature_catalog_for_admin
+
+            payload["prediction_feature_catalog"] = feature_catalog_for_admin()
+        except Exception:
+            payload["prediction_feature_catalog"] = []
 
         from ai_gateway import conf as ai_conf
 

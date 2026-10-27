@@ -299,6 +299,22 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         choices=["NORMAL", "PRO", "PREMIUM"],
         required=False,
     )
+    new_password = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+        min_length=8,
+    )
+    confirm_new_password = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
+    admin_password = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
 
     class Meta:
         model = User
@@ -312,6 +328,9 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
             "sexe_user",
             "type_user",
             "account_tier",
+            "new_password",
+            "confirm_new_password",
+            "admin_password",
         )
         extra_kwargs = {
             "email": {"required": False},
@@ -325,14 +344,55 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         role_code = getattr(type_user, "code_typeUser", None)
         if tier != "NORMAL" and role_code and role_code != "USER":
             raise validation_error("ERR_TIER_CITIZEN_ONLY", self.context, field="account_tier")
+
+        new_password = (attrs.get("new_password") or "").strip()
+        if new_password:
+            confirm_new_password = (attrs.get("confirm_new_password") or "").strip()
+            admin_password = (attrs.get("admin_password") or "").strip()
+            if new_password != confirm_new_password:
+                raise validation_error(
+                    "ERR_PASSWORDS_MISMATCH",
+                    self.context,
+                    field="confirm_new_password",
+                )
+            if not admin_password:
+                raise validation_error(
+                    "ERR_ADMIN_PASSWORD_REQUIRED",
+                    self.context,
+                    field="admin_password",
+                )
+            request = self.context.get("request")
+            admin_user = getattr(request, "user", None)
+            if not admin_user or not admin_user.is_authenticated:
+                raise validation_error("ERR_ADMIN_PASSWORD_INVALID", self.context, field="admin_password")
+            if not admin_user.check_password(admin_password):
+                raise validation_error("ERR_ADMIN_PASSWORD_INVALID", self.context, field="admin_password")
+            try:
+                validate_password(new_password, user=instance)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
+            attrs["new_password"] = new_password
+        else:
+            attrs.pop("new_password", None)
+            attrs.pop("confirm_new_password", None)
+            attrs.pop("admin_password", None)
+
         return attrs
 
     def update(self, instance, validated_data):
+        new_password = validated_data.pop("new_password", None)
+        validated_data.pop("confirm_new_password", None)
+        validated_data.pop("admin_password", None)
+
         type_user = validated_data.get("type_user", instance.type_user)
         role_code = getattr(type_user, "code_typeUser", None)
         if role_code and role_code != "USER":
             validated_data["account_tier"] = "NORMAL"
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        if new_password:
+            instance.set_password(new_password)
+            instance.save(update_fields=["password"])
+        return instance
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exclude(pk=self.instance.pk).exists():

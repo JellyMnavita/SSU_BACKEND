@@ -182,6 +182,33 @@ SIMPLE_JWT = {
 # URL de votre frontend pour le lien de reset
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
+# WhatsApp Cloud API (Meta) — webhook legacy / optionnel
+WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_BUSINESS_ACCOUNT_ID = os.getenv("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
+WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "")
+WHATSAPP_API_VERSION = os.getenv("WHATSAPP_API_VERSION", "v23.0")
+WHATSAPP_ENABLED = os.getenv("WHATSAPP_ENABLED", "False") == "True"
+
+# Twilio WhatsApp (canal recommandé pour SOS / alertes)
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+# Ex. sandbox: whatsapp:+14155238886  | prod: whatsapp:+243812321594
+TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")
+TWILIO_WHATSAPP_ENABLED = os.getenv("TWILIO_WHATSAPP_ENABLED", "False") == "True"
+# Content Template SIDs (HX...) — optionnels ; sans SID = message texte (sandbox)
+TWILIO_WA_TEMPLATE_SOS = os.getenv("TWILIO_WA_TEMPLATE_SOS", "")
+TWILIO_WA_TEMPLATE_TRIP = os.getenv("TWILIO_WA_TEMPLATE_TRIP", "")
+TWILIO_WA_TEMPLATE_CHECKIN = os.getenv("TWILIO_WA_TEMPLATE_CHECKIN", "")
+TWILIO_WA_TEMPLATE_CHECKIN_MISSED = os.getenv("TWILIO_WA_TEMPLATE_CHECKIN_MISSED", "")
+
+# Telegram Bot API (alertes SOS — gratuit, messages libres)
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "")
+TELEGRAM_ENABLED = os.getenv("TELEGRAM_ENABLED", "False") == "True"
+TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # Développement
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Production

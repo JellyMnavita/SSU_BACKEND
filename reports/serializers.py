@@ -216,7 +216,8 @@ class ReportSerializer(serializers.ModelSerializer):
             data["citizen_data"] = citizen_data
 
         if user and user.is_authenticated:
-            if user.type_user.code_typeUser not in ["ADMIN", "USER"]:
+            role = getattr(getattr(user, "type_user", None), "code_typeUser", None)
+            if role not in ("ADMIN", "USER", "GOV"):
                 raise ValidationError(translate("ERR_REPORT_ROLE_ONLY"))
             data["user"] = user
             data["source"] = "U"  # Utilisateur inscrit

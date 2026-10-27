@@ -38,6 +38,26 @@ def maybe_auto_apply_moderation(report, moderation: dict) -> bool:
             return True
         return False
 
+    # Signalement rapide incomplet : forcer l'attente (pas de rejet/validation auto).
+    if report.source == "Q":
+        from ai_gateway.services.fusion import _quick_needs_enrichment
+
+        if _quick_needs_enrichment(getattr(report, "description", "") or ""):
+            if report.status != "P":
+                previous = report.status
+                report.status = "P"
+                report.ai_moderation_auto_applied = False
+                report.save(update_fields=["status", "ai_moderation_auto_applied"])
+                invalidate_reports_list_cache()
+                logger.info(
+                    "Signalement rapide %s forcé en attente (enrichissement requis) : %s → P",
+                    report.pk,
+                    previous,
+                )
+                return True
+            return False
+        # Enrichi : poursuivre l'auto-modération normale ci-dessous.
+
     settings = ReportAISettings.get_solo()
     if not settings.auto_apply_moderation:
         return False

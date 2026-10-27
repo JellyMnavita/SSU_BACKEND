@@ -39,6 +39,21 @@ def _looks_benign(description: str) -> bool:
     return looks_benign(description)
 
 
+_QUICK_PLACEHOLDER_MARKERS = (
+    "signalement rapide",
+    "double appui",
+    "bouton volume",
+)
+
+
+def _quick_needs_enrichment(description: str) -> bool:
+    """True tant que le citoyen n'a pas enrichi le texte du signalement volume."""
+    text = (description or "").strip().lower()
+    if len(text) < 40:
+        return True
+    return any(marker in text for marker in _QUICK_PLACEHOLDER_MARKERS)
+
+
 def _nlp_is_rule_match(nlp: dict | None) -> bool:
     return bool(nlp and nlp.get("model_used") == "rules")
 
@@ -198,6 +213,7 @@ def moderation_from_fusion(
     reasons = list(fusion.get("reasons") or [])
     is_scraped_news = report_source == "S"
     is_sos = report_source == "O"
+    is_quick = report_source == "Q"
     is_citizen_source = report_source in ("C", "U", "W", "Q")
 
     if is_sos:
@@ -206,6 +222,16 @@ def moderation_from_fusion(
             "confidence": 1.0,
             "reasons": [
                 "Alerte SOS — validation automatique système (hors modération IA classique).",
+            ],
+        }
+
+    # Signalement rapide (volume) : trop peu d'infos — rester en attente jusqu'à enrichissement.
+    if is_quick and _quick_needs_enrichment(description):
+        return {
+            "recommendation": "P",
+            "confidence": 0.0,
+            "reasons": [
+                "Signalement rapide incomplet — enrichissement obligatoire par le citoyen avant traitement IA.",
             ],
         }
 

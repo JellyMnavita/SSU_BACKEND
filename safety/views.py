@@ -35,6 +35,7 @@ from .notify import (
     notify_sos_contacts,
     notify_trip_contacts,
 )
+from .telegram_link import create_link_for_contact, unlink_contact
 from .services import map_mobile_degree, map_mobile_source, user_can_trigger_sos
 from .sos_report import finalize_sos_report, is_sos_report
 
@@ -67,6 +68,7 @@ def _create_emergency_report(user, *, kind, lat, lng, location, description, mob
         latitude=lat,
         degree="E",
         source=source,
+        status="P",
         incident_type="autre",
         mobile_local_id=mobile_local_id,
         ai_processing_status="pending",
@@ -120,6 +122,26 @@ class TrustedContactDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return TrustedContact.objects.filter(user=self.request.user)
+
+
+class TrustedContactTelegramLinkView(APIView):
+    """Génère un lien t.me/...?start=TOKEN pour lier le contact à Telegram."""
+
+    permission_classes = [IsAuthenticatedUser, MinCitizenTierPermission]
+    min_citizen_tier = PRO
+
+    def post(self, request, pk):
+        contact = TrustedContact.objects.filter(user=request.user, pk=pk).first()
+        if not contact:
+            return Response({"detail": "Contact introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(create_link_for_contact(contact))
+
+    def delete(self, request, pk):
+        contact = TrustedContact.objects.filter(user=request.user, pk=pk).first()
+        if not contact:
+            return Response({"detail": "Contact introuvable."}, status=status.HTTP_404_NOT_FOUND)
+        unlink_contact(contact)
+        return Response({"telegram_linked": False})
 
 
 class EmergencyAlertView(APIView):
@@ -188,7 +210,14 @@ class EmergencyAlertView(APIView):
                 "session": TrackingSessionSerializer(session).data,
                 "maps_link": f"https://maps.google.com/?q={data['latitude']},{data['longitude']}",
                 "track_url": f"/suivi/{session.token}",
-                "contacts_notified": notify_stats["in_app"] + notify_stats["email"] if notify_stats else 0,
+                "contacts_notified": (
+                    notify_stats["in_app"]
+                    + notify_stats["email"]
+                    + notify_stats.get("whatsapp", 0)
+                    + notify_stats.get("telegram", 0)
+                )
+                if notify_stats
+                else 0,
                 "notification_stats": notify_stats,
                 "message": "Alerte enregistrée — suivi GPS actif.",
             },
@@ -211,6 +240,24 @@ class TrackingSessionStopView(APIView):
         session.ended_at = timezone.now()
         session.save(update_fields=["status", "ended_at"])
         return Response(TrackingSessionSerializer(session).data)
+
+
+class MyTrackingSessionsView(generics.ListAPIView):
+    """Historique des suivis SOS / signalements rapides de l'utilisateur connecté."""
+
+    serializer_class = TrackingSessionSerializer
+    permission_classes = [IsAuthenticatedUser]
+
+    def get_queryset(self):
+        return (
+            TrackingSession.objects.filter(
+                user=self.request.user,
+                kind__in=["sos", "quick"],
+            )
+            .prefetch_related("points")
+            .select_related("user", "report")
+            .order_by("-started_at")[:40]
+        )
 
 
 class TrackingPointCreateView(APIView):
@@ -321,7 +368,12 @@ class TripStartView(APIView):
             {
                 "trip": TripSerializer(trip).data,
                 "session": TrackingSessionSerializer(session).data,
-                "contacts_notified": notify_stats["in_app"] + notify_stats["email"]
+                "contacts_notified": (
+                    notify_stats["in_app"]
+                    + notify_stats["email"]
+                    + notify_stats.get("whatsapp", 0)
+                    + notify_stats.get("telegram", 0)
+                )
                 if notify_stats
                 else 0,
                 "notification_stats": notify_stats,
@@ -413,7 +465,12 @@ class CheckInStartView(APIView):
             {
                 "check_in": CheckInSerializer(check_in).data,
                 "session": TrackingSessionSerializer(session).data,
-                "contacts_notified": notify_stats["in_app"] + notify_stats["email"]
+                "contacts_notified": (
+                    notify_stats["in_app"]
+                    + notify_stats["email"]
+                    + notify_stats.get("whatsapp", 0)
+                    + notify_stats.get("telegram", 0)
+                )
                 if notify_stats
                 else 0,
                 "notification_stats": notify_stats,
@@ -527,7 +584,12 @@ class CheckInMissedView(APIView):
         return Response(
             {
                 "check_in": CheckInSerializer(check_in).data,
-                "contacts_notified": notify_stats["in_app"] + notify_stats["email"]
+                "contacts_notified": (
+                    notify_stats["in_app"]
+                    + notify_stats["email"]
+                    + notify_stats.get("whatsapp", 0)
+                    + notify_stats.get("telegram", 0)
+                )
                 if notify_stats
                 else 0,
                 "notification_stats": notify_stats,

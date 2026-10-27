@@ -51,6 +51,11 @@ class Command(BaseCommand):
             help="Supprime les signalements synthétiques existants avant création.",
         )
         parser.add_argument(
+            "--clear-only",
+            action="store_true",
+            help="Supprime uniquement les signalements synthétiques (aucune création).",
+        )
+        parser.add_argument(
             "--seed",
             type=int,
             default=42,
@@ -69,14 +74,24 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        rng = random.Random(options["seed"])
-        count = max(1, options["count"])
-
-        if options["clear"]:
+        if options["clear"] or options["clear_only"]:
             deleted, _ = Report.objects.filter(
                 external_source_url__startswith=SYNTHETIC_URL_PREFIX
             ).delete()
             self.stdout.write(self.style.WARNING(f"Supprimé {deleted} signalement(s) synthétique(s)."))
+            if options["clear_only"]:
+                remaining = Report.objects.exclude(
+                    external_source_url__startswith=SYNTHETIC_URL_PREFIX
+                ).count()
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Terminé. {remaining} signalement(s) non synthétique(s) conservé(s)."
+                    )
+                )
+                return
+
+        rng = random.Random(options["seed"])
+        count = max(1, options["count"])
 
         if options["legacy"]:
             created = self._seed_legacy(rng, count)

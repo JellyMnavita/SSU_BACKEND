@@ -63,36 +63,52 @@ class TokenRefreshView(APIView):
 
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
-        if refresh_token is None:
-            return Response({"error": "Aucun refresh token fourni."}, status=status.HTTP_401_UNAUTHORIZED)
+        if not refresh_token:
+            refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"error": "Aucun refresh token fourni."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         try:
             old_refresh = RefreshToken(refresh_token)
             access_token = str(old_refresh.access_token)
-
-            response = Response({"access": access_token}, status=status.HTTP_200_OK)
+            new_refresh_str = None
 
             if settings.SIMPLE_JWT.get("ROTATE_REFRESH_TOKENS", False):
                 if settings.SIMPLE_JWT.get("BLACKLIST_AFTER_ROTATION", False):
                     try:
                         old_refresh.blacklist()
                     except AttributeError:
-                        return Response({"error": "La blacklist n'est pas bien activée."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        return Response(
+                            {"error": "La blacklist n'est pas bien activée."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        )
 
-                # 👉 Extraire user_id depuis le token
                 user_id = old_refresh["user_id"]
                 try:
                     user = User.objects.get(id=user_id)
                 except User.DoesNotExist:
-                    return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        {"error": "Utilisateur non trouvé."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
-                # Créer un nouveau refresh token
                 new_refresh = RefreshToken.for_user(user)
+                new_refresh_str = str(new_refresh)
                 remove_user_session(user, str(old_refresh.get("jti")))
                 register_user_session(user, str(new_refresh["jti"]), request)
+
+            payload = {"access": access_token}
+
+            response = Response(payload, status=status.HTTP_200_OK)
+
+            if new_refresh_str:
                 response.set_cookie(
                     key="refresh_token",
-                    value=str(new_refresh),
+                    value=new_refresh_str,
                     httponly=True,
                     secure=not settings.DEBUG,
                     samesite="Lax",
@@ -102,7 +118,10 @@ class TokenRefreshView(APIView):
             return response
 
         except TokenError:
-            return Response({"error": "Refresh token invalide ou expiré."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Refresh token invalide ou expiré."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 
 User = get_user_model()
@@ -145,7 +164,9 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.COOKIES.get("refresh_token")
+            refresh_token = request.COOKIES.get("refresh_token") or request.data.get(
+                "refresh"
+            )
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 remove_user_session(request.user, str(token.get("jti")))

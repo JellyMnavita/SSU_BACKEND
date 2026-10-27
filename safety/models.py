@@ -11,9 +11,15 @@ class TrustedContact(models.Model):
     phone = models.CharField(max_length=32)
     email = models.EmailField(blank=True, default="")
     relationship = models.CharField(max_length=80, blank=True, default="")
+    telegram_chat_id = models.CharField(max_length=32, blank=True, default="")
+    telegram_link_token = models.CharField(max_length=32, blank=True, default="", db_index=True)
+    telegram_link_expires_at = models.DateTimeField(null=True, blank=True)
     mobile_local_id = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
 
     class Meta:
         ordering = ["created_at"]

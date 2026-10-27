@@ -43,5 +43,6 @@ class ReportAdmin(admin.ModelAdmin):
     raw_id_fields = ("user", "citizen", "quartier")
 
 
+
 admin.site.register(ReportAISettings)
 admin.site.register(ScrapedReport)

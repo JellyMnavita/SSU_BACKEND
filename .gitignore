@@ -1,2 +1,43 @@
+# Secrets et configuration locale
 .env
-venv
+.env.*
+!.env.example
+*.pem
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Django — artefacts locaux
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# Données et modèles générés (signalements, poids, exports)
+# Régénérés par export_reports_csv puis train_prediction_model.
+prediction/model/*.pkl
+prediction/data/*.csv
+prediction/data/rdc_kin.json
+prediction/splits/
+prediction/gold_eval/*.csv
+prediction/reports/*.pdf
+prediction/reports/*.docx
+prediction/reports/*.png
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
